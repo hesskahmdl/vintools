@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V-Tools Live Monitor</title>
+  <style>
+    :root {
+      --bg-dark: #080a0d;
+      --card-bg: #0f131a;
+      --accent-green: #00ffa3;
+      --accent-green-hover: #00cc82;
+      --text-main: #ffffff;
+      --text-muted: #64748b;
+      --border-color: #1a202c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background-color: #05070a;
+      border-right: 1px solid var(--border-color);
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .brand { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+    .brand span { color: var(--accent-green); }
+
+    .menu-group { display: flex; flex-direction: column; gap: 4px; }
+    .menu-title { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #475569; margin: 10px 0 5px 10px; }
+
+    .menu-item {
+      padding: 10px 12px;
+      border-radius: 6px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .menu-item.active, .menu-item:hover {
+      background-color: #111827;
+      color: var(--accent-green);
+    }
+
+    /* Main Container */
+    .main-content { flex: 1; padding: 25px; overflow-y: auto; }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .status-pill {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    /* Panel de Filtres / Recherche */
+    .filter-box {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 25px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .filter-input {
+      background-color: #05070a;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .filter-input:focus { border-color: var(--accent-green); }
+
+    .btn-apply {
+      padding: 10px 20px;
+      background-color: var(--accent-green);
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-apply:hover { background-color: var(--accent-green-hover); }
+
+    /* Grid des cartes */
+    .feed-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    /* Structure Carte */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card-img-container {
+      position: relative;
+      width: 100%;
+      height: 190px;
+      border-radius: 6px;
+      overflow: hidden;
+      background-color: #1e293b;
+    }
+
+    .card-img { width: 100%; height: 100%; object-fit: cover; }
+
+    .card-details { display: flex; flex-direction: column; gap: 4px; }
+    
+    .brand-size { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+    .card-title { font-size: 0.85rem; font-weight: 600; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .seller-info { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 0.75rem; color: #94a3b8; }
+    .seller-avatar { width: 14px; height: 14px; border-radius: 50%; background-color: var(--accent-green); }
+
+    .condition-badge {
+      display: inline-block;
+      background-color: #1e293b;
+      color: #94a3b8;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    .price-container { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
+    .price-main { font-size: 1.1rem; font-weight: 700; color: #fff; }
+
+    .time-tag { font-size: 0.7rem; color: #64748b; }
+
+    /* Bouton d'action */
+    .btn-buy {
+      width: 100%;
+      padding: 9px;
+      background-color: var(--accent-green);
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: background-color 0.2s;
+      display: block;
+    }
+
+    .btn-buy:hover { background-color: var(--accent-green-hover); }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <div class="brand"><span>v</span>tools</div>
+    
+    <div class="menu-group">
+      <div class="menu-title">Vinted</div>
+      <a href="#" class="menu-item active">Fil d'actualité</a>
+      <a href="#" class="menu-item">Filtres</a>
+      <a href="#" class="menu-item">Statistiques</a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h2>Fil d'actualité</h2>
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        Scraper : Actif (<span id="items-count">0</span> trouvés)
+      </div>
+    </div>
+
+    <!-- Filtres Dynamiques -->
+    <div class="filter-box">
+      <input type="text" id="search-keyword" class="filter-input" placeholder="Mot-clé (ex: Nike, Adidas)" value="nike" style="flex: 2;">
+      <input type="number" id="max-price" class="filter-input" placeholder="Prix Max (€)" value="30" style="flex: 1;">
+      <button onclick="updateConfig()" class="btn-apply">Appliquer les filtres</button>
+    </div>
+
+    <div class="feed-grid" id="feed">
+      <!-- Les annonces s'affichent ici -->
+    </div>
+  </div>
+
+  <script>
+    async function fetchItems() {
+      try {
+        const response = await fetch('http://localhost:5000/api/feed');
+        const data = await response.json();
+        
+        document.getElementById('items-count').innerText = data.count;
+        const feedContainer = document.getElementById('feed');
+        
+        if (data.items.length === 0) {
+          feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Recherche en cours d\'articles correspondant à tes critères...</div>';
+          return;
+        }
+
+        feedContainer.innerHTML = '';
+
+        data.items.forEach(item => {
+          const cardHTML = `
+            <div class="card">
+              <div class="card-img-container">
+                <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
+              </div>
+              <div class="card-details">
+                <div class="brand-size">${item.brand} • ${item.size}</div>
+                <div class="card-title">${item.title}</div>
+                
+                <div class="seller-info">
+                  <div class="seller-avatar"></div>
+                  <span>${item.seller}</span>
+                </div>
+
+                <div class="condition-badge">${item.condition}</div>
+
+                <div class="price-container">
+                  <span class="price-main">${item.price} €</span>
+                </div>
+
+                <div class="time-tag">${item.time_ago}</div>
+              </div>
+              <a href="${item.url}" target="_blank" class="btn-buy">Acheter</a>
+            </div>
+          `;
+          feedContainer.innerHTML += cardHTML;
+        });
+
+      } catch (error) {
+        console.error("Erreur de connexion au serveur local :", error);
+      }
+    }
+
+    async function updateConfig() {
+      const keyword = document.getElementById('search-keyword').value;
+      const maxPrice = document.getElementById('max-price').value;
+
+      await fetch('http://localhost:5000/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword: keyword, max_price: maxPrice })
+      });
+
+      // Vider l'affichage immédiatement avant la mise à jour
+      document.getElementById('feed').innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Mise à jour des filtres...</div>';
+      fetchItems();
+    }
+
+    // Rafraîchissement automatique toutes les 2 secondes
+    fetchItems();
+    setInterval(fetchItems, 2000);
+  </script>
+</body>
+</html>

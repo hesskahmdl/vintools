@@ -51,6 +51,11 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
     }
 
     .menu-item.active, .menu-item:hover {
@@ -87,7 +92,7 @@
       box-shadow: 0 0 10px var(--accent-green);
     }
 
-    /* Panel de Filtres / Recherche */
+    /* Panel de Filtres / Multi-Recherche */
     .filter-box {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -107,6 +112,7 @@
       border-radius: 6px;
       font-size: 0.9rem;
       outline: none;
+      flex: 1;
     }
 
     .filter-input:focus { border-color: var(--accent-green); }
@@ -140,7 +146,27 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      position: relative;
     }
+
+    .fav-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .fav-btn.active { color: #ff4757; }
 
     .card-img-container {
       position: relative;
@@ -176,7 +202,6 @@
 
     .time-tag { font-size: 0.7rem; color: #64748b; }
 
-    /* Bouton d'action */
     .btn-buy {
       width: 100%;
       padding: 9px;
@@ -194,6 +219,16 @@
     }
 
     .btn-buy:hover { background-color: var(--accent-green-hover); }
+    
+    .stats-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
@@ -203,26 +238,25 @@
     
     <div class="menu-group">
       <div class="menu-title">Vinted</div>
-      <a href="#" class="menu-item active">Fil d'actualité</a>
-      <a href="#" class="menu-item">Filtres</a>
-      <a href="#" class="menu-item">Statistiques</a>
+      <button onclick="switchTab('feed')" id="tab-feed" class="menu-item active">Fil d'actualité</button>
+      <button onclick="switchTab('favs')" id="tab-favs" class="menu-item">Favoris & Recommandations</button>
+      <button onclick="switchTab('stats')" id="tab-stats" class="menu-item">Statistiques</button>
     </div>
   </div>
 
   <div class="main-content">
     <div class="header">
-      <h2>Fil d'actualité</h2>
+      <h2 id="page-title">Fil d'actualité</h2>
       <div class="status-pill">
         <div class="status-dot"></div>
-        Scraper : Actif (<span id="items-count">0</span> trouvés)
+        Scraper : Actif (<span id="items-count">0</span> affichés)
       </div>
     </div>
 
-    <!-- Filtres Dynamiques -->
-    <div class="filter-box">
-      <input type="text" id="search-keyword" class="filter-input" placeholder="Mot-clé (ex: Nike, Adidas)" value="nike" style="flex: 2;">
-      <input type="number" id="max-price" class="filter-input" placeholder="Prix Max (€)" value="30" style="flex: 1;">
-      <button onclick="updateConfig()" class="btn-apply">Appliquer les filtres</button>
+    <!-- Multi-Recherche -->
+    <div class="filter-box" id="filter-box-container">
+      <input type="text" id="search-keyword" class="filter-input" placeholder="Multi-recherche séparée par virgules (ex: nike running, adidas campus, stussy)" value="nike running">
+      <button onclick="updateConfig()" class="btn-apply">Lancer la recherche</button>
     </div>
 
     <div class="feed-grid" id="feed">
@@ -232,66 +266,163 @@
 
   <script>
     const API_URL = 'https://synonymously-additional-jaxon.ngrok-free.dev';
+    let currentTab = 'feed';
+    let localFavs = [];
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+
+      const filterBox = document.getElementById('filter-box-container');
+      const pageTitle = document.getElementById('page-title');
+
+      if (tab === 'feed') {
+        pageTitle.innerText = "Fil d'actualité en direct";
+        filterBox.style.display = 'flex';
+        fetchItems();
+      } else if (tab === 'favs') {
+        pageTitle.innerText = "Mes Favoris & Recommandations";
+        filterBox.style.display = 'none';
+        fetchFavoritesAndRecs();
+      } else if (tab === 'stats') {
+        pageTitle.innerText = "Statistiques de Scraping";
+        filterBox.style.display = 'none';
+        fetchStats();
+      }
+    }
 
     async function fetchItems() {
+      if (currentTab !== 'feed') return;
       try {
         const response = await fetch(`${API_URL}/api/feed`, {
-          headers: {
-            'ngrok-skip-browser-warning': 'true'
-          }
+          headers: { 'ngrok-skip-browser-warning': 'true' }
         });
-        
-        if (!response.ok) throw new Error("Erreur réseau");
+        if (!response.ok) return;
         
         const data = await response.json();
-        
         document.getElementById('items-count').innerText = data.count;
-        const feedContainer = document.getElementById('feed');
+        renderItems(data.items);
+      } catch (error) {
+        console.error("Erreur flux:", error);
+      }
+    }
+
+    async function fetchFavoritesAndRecs() {
+      try {
+        const [favRes, recRes] = await Promise.all([
+          fetch(`${API_URL}/api/favorites`, { headers: { 'ngrok-skip-browser-warning': 'true' } }),
+          fetch(`${API_URL}/api/recommendations`, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+        ]);
+
+        const favData = await favRes.json();
+        const recData = await recRes.json();
         
-        if (!data.items || data.items.length === 0) {
-          feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Recherche en cours d\'articles correspondant à tes critères...</div>';
-          return;
-        }
+        localFavs = favData.favorites.map(f => f.id);
+        const combined = [...favData.favorites, ...recData.items];
+        
+        document.getElementById('items-count').innerText = combined.length;
+        renderItems(combined, true);
+      } catch (e) {
+        console.error("Erreur favoris:", e);
+      }
+    }
 
-        let htmlContent = '';
-        data.items.forEach(item => {
-          htmlContent += `
-            <div class="card">
-              <div class="card-img-container">
-                <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
-              </div>
-              <div class="card-details">
-                <div class="brand-size">${item.brand} • ${item.size}</div>
-                <div class="card-title">${item.title}</div>
-                
-                <div class="seller-info">
-                  <div class="seller-avatar"></div>
-                  <span>${item.seller}</span>
-                </div>
+    async function fetchStats() {
+      try {
+        const response = await fetch(`${API_URL}/api/stats`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        const data = await response.json();
+        
+        const feedContainer = document.getElementById('feed');
+        feedContainer.innerHTML = `
+          <div class="stats-card" style="grid-column: 1/-1;">
+            <h3>Dernière vérification : ${data.last_check || 'En cours'}</h3>
+            <p><strong>Mots-clés surveillés :</strong> ${data.active_keywords.join(', ')}</p>
+            <p><strong>Articles actuellement en mémoire :</strong> ${data.current_feed_items}</p>
+            <p><strong>Total Favoris sauvegardés :</strong> ${data.total_favorites}</p>
+          </div>
+        `;
+      } catch (e) {
+        console.error("Erreur stats:", e);
+      }
+    }
 
-                <div class="condition-badge">${item.condition}</div>
+    function renderItems(items, isFavView = false) {
+      const feedContainer = document.getElementById('feed');
+      if (!items || items.length === 0) {
+        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé pour le moment...</div>';
+        return;
+      }
 
-                <div class="price-container">
-                  <span class="price-main">${item.price} €</span>
-                </div>
-
-                <div class="time-tag">${item.time_ago}</div>
-              </div>
-              <a href="${item.url}" target="_blank" class="btn-buy">Acheter</a>
+      let htmlContent = '';
+      items.forEach(item => {
+        const isFav = localFavs.includes(item.id);
+        htmlContent += `
+          <div class="card">
+            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${JSON.stringify(item).replace(/"/g, '&quot;')})">♥</button>
+            <div class="card-img-container">
+              <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
             </div>
-          `;
+            <div class="card-details">
+              <div class="brand-size">${item.brand} • ${item.size}</div>
+              <div class="card-title">${item.title}</div>
+              
+              <div class="seller-info">
+                <div class="seller-avatar"></div>
+                <span>${item.seller}</span>
+              </div>
+
+              <div class="condition-badge">${item.condition}</div>
+
+              <div class="price-container">
+                <span class="price-main">${item.price} €</span>
+              </div>
+
+              <div class="time-tag">${item.time_ago}</div>
+            </div>
+            <a href="${item.url}" target="_blank" class="btn-buy">Acheter</a>
+          </div>
+        `;
+      });
+
+      feedContainer.innerHTML = htmlContent;
+    }
+
+    async function toggleFav(item) {
+      const isFav = localFavs.includes(item.id);
+      const method = isFav ? 'DELETE' : 'POST';
+      const url = isFav ? `${API_URL}/api/favorites?id=${item.id}` : `${API_URL}/api/favorites`;
+      
+      try {
+        await fetch(url, {
+          method: method,
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true' 
+          },
+          body: isFav ? null : JSON.stringify(item)
         });
 
-        feedContainer.innerHTML = htmlContent;
+        if (isFav) {
+          localFavs = localFavs.filter(id => id !== item.id);
+        } else {
+          localFavs.push(item.id);
+        }
 
-      } catch (error) {
-        console.error("Erreur de connexion :", error);
+        if (currentTab === 'favs') {
+          fetchFavoritesAndRecs();
+        } else {
+          fetchItems();
+        }
+      } catch (e) {
+        console.error("Erreur modification favori:", e);
       }
     }
 
     async function updateConfig() {
       const keyword = document.getElementById('search-keyword').value;
-      const maxPrice = document.getElementById('max-price').value;
 
       try {
         await fetch(`${API_URL}/api/config`, {
@@ -300,7 +431,7 @@
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': 'true'
           },
-          body: JSON.stringify({ keyword: keyword, max_price: maxPrice })
+          body: JSON.stringify({ keyword: keyword })
         });
       } catch (e) {
         console.error("Erreur mise à jour config :", e);
@@ -309,9 +440,11 @@
       fetchItems();
     }
 
-    // Exécution initiale et intervalle de 2s
+    // Exécution automatique toutes les 1.5s
     fetchItems();
-    setInterval(fetchItems, 2000);
+    setInterval(() => {
+      if (currentTab === 'feed') fetchItems();
+    }, 1500);
   </script>
 </body>
 </html>

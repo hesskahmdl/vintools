@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SK Tools</title>
+  <title>SK Tools - Fast Edition</title>
   <style>
     :root {
       --bg-dark: #080a0d;
@@ -240,7 +240,7 @@
       }
     }
 
-    /* Structure Carte */
+    /* Structure Carte avec animation d'apparition ultra-rapide */
     .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -251,6 +251,12 @@
       gap: 8px;
       position: relative;
       transition: border-color 0.2s;
+      animation: fadeInFast 0.15s ease-out;
+    }
+
+    @keyframes fadeInFast {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .card:hover {
@@ -519,7 +525,10 @@
     let currentTab = 'feed';
     let localFavs = [];
     let currentAvgPrice = 0;
-    let lastRenderedItems = []; 
+    
+    // Suivi direct pour éviter les rendus inutiles
+    let renderedIds = new Set();
+    let isFetching = false;
 
     let userMaxPrice = null;
     let userBlacklist = [];
@@ -599,6 +608,8 @@
 
       if (tab === 'feed') {
         pageTitle.innerText = "Fil d'actualité en direct (Live)";
+        renderedIds.clear();
+        feedContainer.innerHTML = '';
         fetchItems();
       } else if (tab === 'solo') {
         pageTitle.innerText = "Recherche Solo";
@@ -610,6 +621,7 @@
         loadCurrentConfig();
       } else if (tab === 'favs') {
         pageTitle.innerText = "Mes Favoris";
+        renderedIds.clear();
         fetchFavoritesAndRecs();
       } else if (tab === 'stats') {
         pageTitle.innerText = "Statistiques Globale";
@@ -618,12 +630,13 @@
     }
 
     async function fetchItems() {
-      if (currentTab !== 'feed' || isFrozen || isHovered) return;
+      if (currentTab !== 'feed' || isFrozen || isHovered || isFetching) return;
+      isFetching = true;
       try {
         const response = await fetch(`${API_URL}/api/feed`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
-        if (!response.ok) return;
+        if (!response.ok) { isFetching = false; return; }
         
         const data = await response.json();
         
@@ -637,6 +650,8 @@
         renderItems(data.items);
       } catch (error) {
         console.error("Erreur flux :", error);
+      } finally {
+        isFetching = false;
       }
     }
 
@@ -651,8 +666,10 @@
         const recData = await recRes.json();
         
         localFavs = favData.favorites.map(f => f.id);
-        const combined = [...favData.favorites, ...recData.items].slice(0, 40);
+        const combined = [...favData.favorites, ...(recData.items || [])].slice(0, 40);
         
+        document.getElementById('feed').innerHTML = '';
+        renderedIds.clear();
         renderItems(combined, true);
       } catch (e) {
         console.error("Erreur favoris :", e);
@@ -681,13 +698,65 @@
       } catch (e) { console.error(e); }
     }
 
+    function createCardElement(item) {
+      const isFav = localFavs.includes(item.id);
+      const itemPrice = parseFloat(item.price) || 0;
+      
+      const isSale = currentAvgPrice > 0 && itemPrice <= (currentAvgPrice * 0.85);
+      const estimatedResell = Math.round(itemPrice * 1.35);
+      const buyUrl = item.url;
+      const buyNowUrl = item.buy_url || (item.id ? `https://www.vinted.fr/checkout?purchase_id=&order_id=${item.id}&order_type=transaction` : '#');
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.id = item.id;
+
+      card.innerHTML = `
+        ${isSale ? '<div class="sale-badge">🔥 SALE</div>' : ''}
+        <button class="fav-btn ${isFav ? 'active' : ''}">♥</button>
+        <div class="card-img-container">
+          <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
+        </div>
+        <div class="card-details">
+          <div class="brand-size">${item.brand} • ${item.size}</div>
+          <div class="card-title">${item.title}</div>
+          
+          <div class="seller-info">
+            <div class="seller-avatar"></div>
+            <span>${item.seller}</span>
+          </div>
+
+          <div class="condition-badge">${item.condition}</div>
+
+          <div class="price-container">
+            <span class="price-main">${item.price} €</span>
+            <span class="profit-tag">Est: ~${estimatedResell}€</span>
+          </div>
+
+          <div class="time-tag">${item.time_ago}</div>
+        </div>
+        
+        <div class="card-buttons">
+          <a href="${buyUrl}" target="_blank" class="btn-buy">Voir</a>
+          <a href="${buyNowUrl}" target="_blank" class="btn-autobuy">⚡ 1-Click</a>
+        </div>
+      `;
+
+      card.querySelector('.fav-btn').onclick = (e) => {
+        e.stopPropagation();
+        toggleFav(item);
+      };
+
+      return { card, isSale };
+    }
+
     function renderItems(rawItems, bypassFilters = false) {
       const feedContainer = document.getElementById('feed');
-      
-      let itemsToProcess = (rawItems && rawItems.length > 0) ? rawItems : lastRenderedItems;
+      if (!rawItems || rawItems.length === 0) return;
 
+      let filteredItems = rawItems;
       if (!bypassFilters) {
-        itemsToProcess = itemsToProcess.filter(item => {
+        filteredItems = rawItems.filter(item => {
           const price = parseFloat(item.price) || 0;
           const titleLower = (item.title || "").toLowerCase();
           
@@ -699,66 +768,41 @@
         });
       }
 
-      if (itemsToProcess.length > 0) {
-        lastRenderedItems = itemsToProcess;
-      }
-
-      const itemsToDisplay = lastRenderedItems;
-      document.getElementById('items-count').innerText = itemsToDisplay.length;
-
-      if (!itemsToDisplay || itemsToDisplay.length === 0) {
-        return;
-      }
-
+      // Inserer uniquement les nouveautés en haut du flux sans tout détruire
       let hasNewSale = false;
-      let htmlContent = '';
-      itemsToDisplay.forEach(item => {
-        const isFav = localFavs.includes(item.id);
-        const itemPrice = parseFloat(item.price) || 0;
-        
-        const isSale = currentAvgPrice > 0 && itemPrice <= (currentAvgPrice * 0.85);
+      const fragment = document.createDocumentFragment();
+
+      // On traite dans l'ordre inverse pour que le plus récent se retrouve au tout début
+      const newItemsToInsert = filteredItems.filter(item => !renderedIds.has(item.id));
+
+      if (newItemsToInsert.length === 0) return;
+
+      // Nettoyer le message d'attente s'il existe
+      if (feedContainer.firstElementChild && !feedContainer.firstElementChild.classList.contains('card')) {
+        feedContainer.innerHTML = '';
+      }
+
+      newItemsToInsert.reverse().forEach(item => {
+        renderedIds.add(item.id);
+        const { card, isSale } = createCardElement(item);
         if (isSale) hasNewSale = true;
-
-        const estimatedResell = Math.round(itemPrice * 1.35);
-        const buyUrl = item.url;
-        const buyNowUrl = item.buy_url || (item.url ? `${item.url}/buy` : '#');
-
-        htmlContent += `
-          <div class="card">
-            ${isSale ? '<div class="sale-badge">🔥 SALE</div>' : ''}
-            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${JSON.stringify(item).replace(/"/g, '&quot;')})">♥</button>
-            <div class="card-img-container">
-              <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
-            </div>
-            <div class="card-details">
-              <div class="brand-size">${item.brand} • ${item.size}</div>
-              <div class="card-title">${item.title}</div>
-              
-              <div class="seller-info">
-                <div class="seller-avatar"></div>
-                <span>${item.seller}</span>
-              </div>
-
-              <div class="condition-badge">${item.condition}</div>
-
-              <div class="price-container">
-                <span class="price-main">${item.price} €</span>
-                <span class="profit-tag">Est: ~${estimatedResell}€</span>
-              </div>
-
-              <div class="time-tag">${item.time_ago}</div>
-            </div>
-            
-            <div class="card-buttons">
-              <a href="${buyUrl}" target="_blank" class="btn-buy">Voir</a>
-              <a href="${buyNowUrl}" target="_blank" class="btn-autobuy">⚡ 1-Click</a>
-            </div>
-          </div>
-        `;
+        fragment.appendChild(card);
       });
 
+      feedContainer.insertBefore(fragment, feedContainer.firstChild);
+
+      // Limiter le nombre d'éléments dans la page HTML à 40 pour des performances optimales
+      while (feedContainer.children.length > 40) {
+        const lastChild = feedContainer.lastElementChild;
+        if (lastChild && lastChild.dataset && lastChild.dataset.id) {
+          renderedIds.delete(lastChild.dataset.id);
+        }
+        feedContainer.removeChild(lastChild);
+      }
+
+      document.getElementById('items-count').innerText = feedContainer.children.length;
+
       if (hasNewSale) playSaleSound();
-      feedContainer.innerHTML = htmlContent;
     }
 
     async function toggleFav(item) {
@@ -781,8 +825,6 @@
 
         if (currentTab === 'favs') {
           fetchFavoritesAndRecs();
-        } else {
-          fetchItems();
         }
       } catch (e) { console.error(e); }
     }
@@ -842,10 +884,13 @@
       }
     }
 
+    // Premier appel direct au démarrage
     fetchItems();
+    
+    // Boucle à ultra-haute cadence (250 ms)
     setInterval(() => {
       if (currentTab === 'feed') fetchItems();
-    }, 800);
+    }, 250);
   </script>
 </body>
 </html>

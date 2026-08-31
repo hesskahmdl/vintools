@@ -615,6 +615,21 @@
     let localFavs = [];
     let isPaused = false;
 
+    // --- IDENTIFIANT UNIQUE PAR UTILISATEUR ---
+    let userId = localStorage.getItem('sk_tools_user_id');
+    if (!userId) {
+      userId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+      localStorage.setItem('sk_tools_user_id', userId);
+    }
+
+    function getHeaders(extraHeaders = {}) {
+      return {
+        'ngrok-skip-browser-warning': 'true',
+        'X-User-ID': userId,
+        ...extraHeaders
+      };
+    }
+
     // Déclenchement de la recherche rapide avec 'Entrée'
     document.getElementById('quick-search-input').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
@@ -652,7 +667,7 @@
       try {
         await fetch(`${API_URL}/api/config`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+          headers: getHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ single_keyword: val })
         });
         if (isPaused) togglePause();
@@ -665,7 +680,7 @@
 
     async function loadCurrentConfig() {
       try {
-        const res = await fetch(`${API_URL}/api/config`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+        const res = await fetch(`${API_URL}/api/config`, { headers: getHeaders() });
         const data = await res.json();
         if (data.keywords && Array.isArray(data.keywords)) {
           data.keywords.forEach((kw, index) => {
@@ -736,7 +751,7 @@
       if (currentTab !== 'feed' || isPaused) return;
       try {
         const response = await fetch(`${API_URL}/api/feed`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
+          headers: getHeaders()
         });
         if (!response.ok) return;
         
@@ -758,8 +773,8 @@
     async function fetchFavoritesAndRecs() {
       try {
         const [favRes, recRes] = await Promise.all([
-          fetch(`${API_URL}/api/favorites`, { headers: { 'ngrok-skip-browser-warning': 'true' } }),
-          fetch(`${API_URL}/api/recommendations`, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+          fetch(`${API_URL}/api/favorites`, { headers: getHeaders() }),
+          fetch(`${API_URL}/api/recommendations`, { headers: getHeaders() })
         ]);
 
         const favData = await favRes.json();
@@ -778,7 +793,7 @@
     async function fetchStats() {
       try {
         const response = await fetch(`${API_URL}/api/stats`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
+          headers: getHeaders()
         });
         const data = await response.json();
         
@@ -884,7 +899,7 @@
       try {
         await fetch(url, {
           method: method,
-          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+          headers: getHeaders({ 'Content-Type': 'application/json' }),
           body: isFav ? null : JSON.stringify(item)
         });
 
@@ -915,7 +930,7 @@
       try {
         await fetch(`${API_URL}/api/config`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+          headers: getHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ 
             keywords: keywords,
             max_price: maxPrice !== "" ? parseFloat(maxPrice) : null

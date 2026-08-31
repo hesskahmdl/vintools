@@ -14,6 +14,7 @@
       --text-muted: #64748b;
       --border-color: #1a202c;
       --pause-red: #ff4757;
+      --star-color: #ffb703;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -333,8 +334,33 @@
     .card-details { display: flex; flex-direction: column; gap: 4px; }
     .brand-size { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
     .card-title { font-size: 0.8rem; font-weight: 600; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .seller-info { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 0.75rem; color: #94a3b8; }
-    .seller-avatar { width: 12px; height: 12px; border-radius: 50%; background-color: var(--accent-green); }
+    
+    .seller-info { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 0.75rem; color: #94a3b8; flex-wrap: wrap; }
+    .seller-avatar { width: 12px; height: 12px; border-radius: 50%; background-color: var(--accent-green); flex-shrink: 0; }
+    
+    /* Style des Étoiles Vectorielles SVG */
+    .seller-stars-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 1px;
+      margin-left: 2px;
+    }
+    
+    .star-icon {
+      width: 11px;
+      height: 11px;
+      fill: #334155; /* Étoile vide */
+    }
+    
+    .star-icon.filled {
+      fill: var(--star-color); /* Étoile pleine */
+    }
+    
+    .rating-text {
+      font-size: 0.68rem;
+      color: #64748b;
+      margin-left: 2px;
+    }
 
     .condition-badge {
       display: inline-block;
@@ -632,6 +658,28 @@
       } catch (e) { console.error(e); }
     }
 
+    // Générateur d'étoiles SVG réelles
+    function generateStarsSVG(rating) {
+      if (rating === undefined || rating === null || rating === '') return '';
+      const numRating = parseFloat(rating);
+      if (isNaN(numRating)) return '';
+
+      const starSVGPath = "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z";
+      let starsHTML = '<div class="seller-stars-container">';
+      
+      for (let i = 1; i <= 5; i++) {
+        const isFilled = i <= Math.round(numRating);
+        starsHTML += `
+          <svg class="star-icon ${isFilled ? 'filled' : ''}" viewBox="0 0 24 24">
+            <path d="${starSVGPath}"/>
+          </svg>
+        `;
+      }
+      
+      starsHTML += `<span class="rating-text">(${numRating.toFixed(1)})</span></div>`;
+      return starsHTML;
+    }
+
     function renderItems(items) {
       const feedContainer = document.getElementById('feed');
       if (!items || items.length === 0) {
@@ -642,6 +690,9 @@
       let htmlContent = '';
       items.forEach(item => {
         const isFav = localFavs.includes(item.id);
+        const sellerRating = item.seller_rating || item.rating || item.seller_score || null;
+        const starsHTML = generateStarsSVG(sellerRating);
+
         htmlContent += `
           <div class="card">
             <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${JSON.stringify(item).replace(/"/g, '&quot;')})">♥</button>
@@ -655,6 +706,7 @@
               <div class="seller-info">
                 <div class="seller-avatar"></div>
                 <span>${item.seller}</span>
+                ${starsHTML}
               </div>
 
               <div class="condition-badge">${item.condition}</div>

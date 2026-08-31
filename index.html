@@ -437,11 +437,11 @@
     .star-icon {
       width: 11px;
       height: 11px;
-      fill: #334155; /* Étoile vide */
+      fill: #334155;
     }
     
     .star-icon.filled {
-      fill: var(--star-color); /* Étoile pleine */
+      fill: var(--star-color);
     }
     
     .rating-text {
@@ -534,7 +534,6 @@
     <!-- Badge d'Étoiles & Lauriers -->
     <div class="badge-rating-container">
       <div class="badge-rating-content">
-        <!-- Laurier Gauche -->
         <svg class="laurel-icon" viewBox="0 0 24 32">
           <path d="M12,2 C10,6 6,10 2,12 C6,14 10,18 12,22 C10,18 7,16 4,16 C7,14 9,11 10,8 C11,5 12,2 12,2 Z M10,12 C8,15 5,18 2,20 C5,21 8,23 10,26 C9,23 7,21 5,20 C7,19 9,17 10,12 Z"/>
         </svg>
@@ -551,14 +550,13 @@
           <div class="badge-subtitle">WORKS IN EUROPE + USA</div>
         </div>
 
-        <!-- Laurier Droit -->
         <svg class="laurel-icon" viewBox="0 0 24 32" style="transform: scaleX(-1);">
           <path d="M12,2 C10,6 6,10 2,12 C6,14 10,18 12,22 C10,18 7,16 4,16 C7,14 9,11 10,8 C11,5 12,2 12,2 Z M10,12 C8,15 5,18 2,20 C5,21 8,23 10,26 C9,23 7,21 5,20 C7,19 9,17 10,12 Z"/>
         </svg>
       </div>
     </div>
 
-    <!-- Encart Tarifs (Coming Soon) -->
+    <!-- Encart Tarifs -->
     <div class="coming-soon-container" id="rates-panel" style="display: none;">
       <div class="coming-soon-badge">Coming Soon</div>
       <div class="coming-soon-text">Les offres et plans d'abonnement seront bientôt disponibles.</div>
@@ -593,7 +591,7 @@
         <input type="number" id="max-price-input" class="filter-input" placeholder="Ex: 40">
       </div>
 
-      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les modifications</button>
+      <button onclick="saveMultiConfig()" class="btn-apply" id="btn-save-multi">Appliquer les modifications</button>
     </div>
 
     <div class="feed-grid" id="feed">
@@ -615,7 +613,6 @@
     let localFavs = [];
     let isPaused = false;
 
-    // Déclenchement de la recherche rapide avec 'Entrée'
     document.getElementById('quick-search-input').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         applyQuickSearch();
@@ -797,7 +794,6 @@
       } catch (e) { console.error(e); }
     }
 
-    // Générateur d'étoiles SVG réelles
     function generateStarsSVG(rating) {
       if (rating === undefined || rating === null || rating === '') return '';
       const numRating = parseFloat(rating);
@@ -832,7 +828,6 @@
         const sellerRating = item.seller_rating || item.rating || item.seller_score || null;
         const starsHTML = generateStarsSVG(sellerRating);
         
-        // Construction de la chaîne de localisation (Ville, Pays)
         const city = item.city || item.location || '';
         const country = item.country || '';
         let locationText = '';
@@ -902,6 +897,7 @@
       } catch (e) { console.error(e); }
     }
 
+    // MODIFICATION : Exécution parallèle avec Promise.all pour un traitement individuel et ultra-rapide
     async function saveMultiConfig() {
       const slots = [
         document.getElementById('slot-0').value.trim(),
@@ -912,26 +908,36 @@
       ];
       const maxPrice = document.getElementById('max-price-input').value;
       const parsedMaxPrice = maxPrice !== "" ? parseFloat(maxPrice) : null;
+      
+      const btn = document.getElementById('btn-save-multi');
+      btn.innerText = "Application...";
+      btn.disabled = true;
 
       try {
-        // Envoi de chaque terme de recherche dans des requêtes distinctes et individuelles
         const activeKeywords = slots.filter(kw => kw !== "");
-        
-        for (const kw of activeKeywords) {
-          await fetch(`${API_URL}/api/config`, {
+
+        // Création d'un tableau de promesses HTTP (une requête dédiée par mot-clé)
+        const requests = activeKeywords.map(kw => 
+          fetch(`${API_URL}/api/config`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
             body: JSON.stringify({ 
               keyword: kw,
               max_price: parsedMaxPrice
             })
-          });
-        }
+          })
+        );
+
+        // Exécution simultanée de toutes les requêtes
+        await Promise.all(requests);
 
         if (isPaused) togglePause();
         switchTab('feed');
       } catch (e) {
         console.error("Erreur config :", e);
+      } finally {
+        btn.innerText = "Appliquer les modifications";
+        btn.disabled = false;
       }
     }
 

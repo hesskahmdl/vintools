@@ -10,6 +10,7 @@
       --card-bg: #0f131a;
       --accent-green: #00ffa3;
       --accent-green-hover: #00cc82;
+      --accent-sale: #ff4757;
       --text-main: #ffffff;
       --text-muted: #64748b;
       --border-color: #1a202c;
@@ -150,8 +151,8 @@
     .stat-box .title { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
     .stat-box .val { font-size: 1.1rem; font-weight: 800; color: var(--accent-green); }
 
-    /* Multi-Search Container */
-    .multi-search-container {
+    /* Search Containers */
+    .search-panel {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 10px;
@@ -172,7 +173,8 @@
       font-size: 0.8rem;
       font-weight: 700;
       color: var(--accent-green);
-      width: 80px;
+      width: 90px;
+      flex-shrink: 0;
     }
 
     .filter-input {
@@ -247,6 +249,26 @@
     }
     .fav-btn.active { color: #ff4757; }
 
+    /* Badge SALE Feu 🔥 */
+    .sale-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 20px;
+      z-index: 2;
+      box-shadow: 0 0 10px rgba(255, 71, 87, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
     .card-img-container {
       position: relative;
       width: 100%;
@@ -313,7 +335,8 @@
     <div class="menu-group">
       <div class="menu-title">Vinted Monitor</div>
       <button onclick="switchTab('feed')" id="tab-feed" class="menu-item active">Fil (Max 40)</button>
-      <button onclick="switchTab('search')" id="tab-search" class="menu-item">Multi-Recherche & Prix</button>
+      <button onclick="switchTab('solo')" id="tab-solo" class="menu-item">Recherche Solo</button>
+      <button onclick="switchTab('search')" id="tab-search" class="menu-item">Multi-Recherche</button>
       <button onclick="switchTab('favs')" id="tab-favs" class="menu-item">Favoris</button>
       <button onclick="switchTab('stats')" id="tab-stats" class="menu-item">Statistiques</button>
     </div>
@@ -345,9 +368,31 @@
       </div>
     </div>
 
-    <!-- Multi-Recherche + Prix Max -->
-    <div class="multi-search-container" id="multi-search-panel" style="display: none;">
-      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Recherches & Filtres :</h3>
+    <!-- Panneau Recherche Solo (1 seul item + filtres prix) -->
+    <div class="search-panel" id="solo-search-panel" style="display: none;">
+      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Recherche Solo Rapide :</h3>
+      
+      <div class="slot-row">
+        <span class="slot-label">Recherche :</span>
+        <input type="text" id="solo-query-input" class="filter-input" placeholder="Ex: Nike Tech Fleece">
+      </div>
+      
+      <div class="slot-row">
+        <span class="slot-label">Prix Min (€) :</span>
+        <input type="number" id="solo-min-price" class="filter-input" placeholder="Ex: 10 (Optionnel)">
+      </div>
+
+      <div class="slot-row">
+        <span class="slot-label">Prix Max (€) :</span>
+        <input type="number" id="solo-max-price" class="filter-input" placeholder="Ex: 50 (Optionnel)">
+      </div>
+
+      <button onclick="applySoloSearch()" class="btn-apply">Lancer la recherche Solo</button>
+    </div>
+
+    <!-- Panneau Multi-Recherche + Prix Max -->
+    <div class="search-panel" id="multi-search-panel" style="display: none;">
+      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Multi-Recherche (5 Slots) & Filtres :</h3>
       
       <div class="slot-row"><span class="slot-label">Slot 1:</span><input type="text" id="slot-0" class="filter-input" placeholder="Ex: nike running"></div>
       <div class="slot-row"><span class="slot-label">Slot 2:</span><input type="text" id="slot-1" class="filter-input" placeholder="Ex: nike division"></div>
@@ -360,7 +405,7 @@
         <input type="number" id="max-price-input" class="filter-input" placeholder="Ex: 40 (Laissez vide pour désactiver)">
       </div>
 
-      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les recherches & le filtre</button>
+      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer la Multi-Recherche</button>
     </div>
 
     <div class="feed-grid" id="feed">
@@ -374,9 +419,13 @@
       <span>⚡</span>
       <span>Flux</span>
     </button>
-    <button onclick="switchTab('search')" id="mob-tab-search" class="mobile-nav-btn">
+    <button onclick="switchTab('solo')" id="mob-tab-solo" class="mobile-nav-btn">
       <span>🔍</span>
-      <span>Recherches</span>
+      <span>Solo</span>
+    </button>
+    <button onclick="switchTab('search')" id="mob-tab-search" class="mobile-nav-btn">
+      <span>⚙️</span>
+      <span>Multi</span>
     </button>
     <button onclick="switchTab('favs')" id="mob-tab-favs" class="mobile-nav-btn">
       <span>♥</span>
@@ -392,6 +441,8 @@
     const API_URL = 'https://synonymously-additional-jaxon.ngrok-free.dev';
     let currentTab = 'feed';
     let localFavs = [];
+    let currentAvgPrice = 0;
+    let lastRenderedItems = []; // Garde en mémoire les anciens articles pour ne jamais rien effacer si la récherche est vide
 
     async function loadCurrentConfig() {
       try {
@@ -402,9 +453,14 @@
             const el = document.getElementById(`slot-${index}`);
             if (el) el.value = kw;
           });
+          // Préremplir aussi la recherche solo avec le 1er slot si dispo
+          if(data.keywords[0] && !document.getElementById('solo-query-input').value) {
+            document.getElementById('solo-query-input').value = data.keywords[0];
+          }
         }
         if (data.max_price !== undefined && data.max_price !== null) {
           document.getElementById('max-price-input').value = data.max_price;
+          document.getElementById('solo-max-price').value = data.max_price;
         }
       } catch (e) { console.error(e); }
     }
@@ -419,29 +475,31 @@
       const mobTab = document.getElementById(`mob-tab-${tab}`);
       if (mobTab) mobTab.classList.add('active');
 
-      const searchPanel = document.getElementById('multi-search-panel');
+      const soloPanel = document.getElementById('solo-search-panel');
+      const multiPanel = document.getElementById('multi-search-panel');
       const feedContainer = document.getElementById('feed');
       const pageTitle = document.getElementById('page-title');
 
+      soloPanel.style.display = 'none';
+      multiPanel.style.display = 'none';
+      feedContainer.style.display = 'grid';
+
       if (tab === 'feed') {
         pageTitle.innerText = "Fil d'actualité en direct (Max 40)";
-        searchPanel.style.display = 'none';
-        feedContainer.style.display = 'grid';
         fetchItems();
+      } else if (tab === 'solo') {
+        pageTitle.innerText = "Recherche Solo Manuel";
+        soloPanel.style.display = 'flex';
+        loadCurrentConfig();
       } else if (tab === 'search') {
-        pageTitle.innerText = "Multi-Recherche & Filtre Prix";
-        searchPanel.style.display = 'flex';
-        feedContainer.style.display = 'none';
+        pageTitle.innerText = "Multi-Recherche & Filtres";
+        multiPanel.style.display = 'flex';
         loadCurrentConfig();
       } else if (tab === 'favs') {
         pageTitle.innerText = "Mes Favoris";
-        searchPanel.style.display = 'none';
-        feedContainer.style.display = 'grid';
         fetchFavoritesAndRecs();
       } else if (tab === 'stats') {
         pageTitle.innerText = "Statistiques Globale";
-        searchPanel.style.display = 'none';
-        feedContainer.style.display = 'grid';
         fetchStats();
       }
     }
@@ -455,10 +513,10 @@
         if (!response.ok) return;
         
         const data = await response.json();
-        document.getElementById('items-count').innerText = data.displayed_count;
         
-        // Mise à jour des cartes de prix moyen
+        // Maj stats de prix
         if (data.stats) {
+          currentAvgPrice = parseFloat(data.stats.avg_price) || 0;
           document.getElementById('stat-avg').innerText = `${data.stats.avg_price} €`;
           document.getElementById('stat-min').innerText = `${data.stats.min_price} €`;
           document.getElementById('stat-max').innerText = `${data.stats.max_price} €`;
@@ -483,7 +541,6 @@
         localFavs = favData.favorites.map(f => f.id);
         const combined = [...favData.favorites, ...recData.items].slice(0, 40);
         
-        document.getElementById('items-count').innerText = combined.length;
         renderItems(combined);
       } catch (e) {
         console.error("Erreur favoris :", e);
@@ -515,16 +572,31 @@
 
     function renderItems(items) {
       const feedContainer = document.getElementById('feed');
-      if (!items || items.length === 0) {
-        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé...</div>';
+      
+      // Si les nouveaux articles sont vides, on conserve les derniers affichés (jamais "aucun article trouvé")
+      if (items && items.length > 0) {
+        lastRenderedItems = items;
+      }
+
+      const itemsToDisplay = lastRenderedItems;
+      document.getElementById('items-count').innerText = itemsToDisplay.length;
+
+      if (!itemsToDisplay || itemsToDisplay.length === 0) {
+        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Recherche en cours...</div>';
         return;
       }
 
       let htmlContent = '';
-      items.forEach(item => {
+      itemsToDisplay.forEach(item => {
         const isFav = localFavs.includes(item.id);
+        const itemPrice = parseFloat(item.price) || 0;
+        
+        // Détection automatique SALE : si le prix est inférieur de 15% à la moyenne actuelle
+        const isSale = currentAvgPrice > 0 && itemPrice <= (currentAvgPrice * 0.85);
+
         htmlContent += `
           <div class="card">
+            ${isSale ? '<div class="sale-badge">🔥 SALE</div>' : ''}
             <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${JSON.stringify(item).replace(/"/g, '&quot;')})">♥</button>
             <div class="card-img-container">
               <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
@@ -578,6 +650,27 @@
           fetchItems();
         }
       } catch (e) { console.error(e); }
+    }
+
+    async function applySoloSearch() {
+      const query = document.getElementById('solo-query-input').value.trim();
+      const maxPrice = document.getElementById('solo-max-price').value;
+
+      if (!query) return;
+
+      try {
+        await fetch(`${API_URL}/api/config`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+          body: JSON.stringify({ 
+            keywords: [query], // On remplace par le mot-clé unique
+            max_price: maxPrice !== "" ? parseFloat(maxPrice) : null
+          })
+        });
+        switchTab('feed');
+      } catch (e) {
+        console.error("Erreur Recherche Solo :", e);
+      }
     }
 
     async function saveMultiConfig() {

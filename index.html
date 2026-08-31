@@ -234,6 +234,92 @@
     .stat-box .title { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
     .stat-box .val { font-size: 1.1rem; font-weight: 800; color: var(--accent-green); }
 
+    /* Badge Lauriers & Étoiles Style Fyndit */
+    .badge-rating-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 15px 0 25px 0;
+    }
+
+    .badge-rating-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .laurel-icon {
+      width: 28px;
+      height: 40px;
+      fill: #d97706;
+    }
+
+    .badge-rating-details {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .badge-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-stars {
+      display: flex;
+      gap: 2px;
+      margin: 3px 0;
+    }
+
+    .badge-star-icon {
+      width: 14px;
+      height: 14px;
+      fill: #ffb703;
+    }
+
+    .badge-subtitle {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* Target Box Coming Soon (Tarifs) */
+    .coming-soon-container {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .coming-soon-badge {
+      background-color: rgba(0, 255, 163, 0.1);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+      font-size: 0.9rem;
+      font-weight: 800;
+      padding: 6px 16px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      box-shadow: 0 0 15px rgba(0, 255, 163, 0.2);
+    }
+
+    .coming-soon-text {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
     /* Multi-Search Container */
     .multi-search-container {
       background-color: var(--card-bg);
@@ -416,6 +502,7 @@
       <div class="menu-title">Vinted Monitor</div>
       <button onclick="switchTab('feed')" id="tab-feed" class="menu-item active">Fil (Max 40)</button>
       <button onclick="switchTab('search')" id="tab-search" class="menu-item">Multi-Recherche & Prix</button>
+      <button onclick="switchTab('rates')" id="tab-rates" class="menu-item">Tarifs</button>
       <button onclick="switchTab('favs')" id="tab-favs" class="menu-item">Favoris</button>
       <button onclick="switchTab('stats')" id="tab-stats" class="menu-item">Statistiques</button>
     </div>
@@ -440,6 +527,39 @@
           <span id="status-text">Scraper : Actif</span> (<span id="items-count">0</span>/40)
         </div>
       </div>
+    </div>
+
+    <!-- Badge d'Étoiles & Lauriers -->
+    <div class="badge-rating-container">
+      <div class="badge-rating-content">
+        <!-- Laurier Gauche -->
+        <svg class="laurel-icon" viewBox="0 0 24 32">
+          <path d="M12,2 C10,6 6,10 2,12 C6,14 10,18 12,22 C10,18 7,16 4,16 C7,14 9,11 10,8 C11,5 12,2 12,2 Z M10,12 C8,15 5,18 2,20 C5,21 8,23 10,26 C9,23 7,21 5,20 C7,19 9,17 10,12 Z"/>
+        </svg>
+
+        <div class="badge-rating-details">
+          <div class="badge-title">#1 Vinted Bot</div>
+          <div class="badge-stars">
+            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <div class="badge-subtitle">WORKS IN EUROPE + USA</div>
+        </div>
+
+        <!-- Laurier Droit -->
+        <svg class="laurel-icon" viewBox="0 0 24 32" style="transform: scaleX(-1);">
+          <path d="M12,2 C10,6 6,10 2,12 C6,14 10,18 12,22 C10,18 7,16 4,16 C7,14 9,11 10,8 C11,5 12,2 12,2 Z M10,12 C8,15 5,18 2,20 C5,21 8,23 10,26 C9,23 7,21 5,20 C7,19 9,17 10,12 Z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Encart Tarifs (Coming Soon) -->
+    <div class="coming-soon-container" id="rates-panel" style="display: none;">
+      <div class="coming-soon-badge">Coming Soon</div>
+      <div class="coming-soon-text">Les offres et plans d'abonnement seront bientôt disponibles.</div>
     </div>
 
     <div class="stats-bar" id="stats-bar">
@@ -482,6 +602,7 @@
   <div class="mobile-nav">
     <button onclick="switchTab('feed')" id="mob-tab-feed" class="mobile-nav-btn active">⚡ Flux</button>
     <button onclick="switchTab('search')" id="mob-tab-search" class="mobile-nav-btn">🔍 Rech.</button>
+    <button onclick="switchTab('rates')" id="mob-tab-rates" class="mobile-nav-btn">🏷️ Tarifs</button>
     <button onclick="switchTab('favs')" id="mob-tab-favs" class="mobile-nav-btn">♥ Favs</button>
     <button onclick="switchTab('stats')" id="mob-tab-stats" class="mobile-nav-btn">📊 Stats</button>
   </div>
@@ -567,27 +688,43 @@
       if (mobTab) mobTab.classList.add('active');
 
       const searchPanel = document.getElementById('multi-search-panel');
+      const ratesPanel = document.getElementById('rates-panel');
+      const statsBar = document.getElementById('stats-bar');
       const feedContainer = document.getElementById('feed');
       const pageTitle = document.getElementById('page-title');
 
       if (tab === 'feed') {
         pageTitle.innerText = "Fil d'actualité en direct (Max 40)";
         searchPanel.style.display = 'none';
+        ratesPanel.style.display = 'none';
+        statsBar.style.display = 'grid';
         feedContainer.style.display = 'grid';
         fetchItems();
       } else if (tab === 'search') {
         pageTitle.innerText = "Multi-Recherche & Filtre Prix";
         searchPanel.style.display = 'flex';
+        ratesPanel.style.display = 'none';
+        statsBar.style.display = 'grid';
         feedContainer.style.display = 'none';
         loadCurrentConfig();
+      } else if (tab === 'rates') {
+        pageTitle.innerText = "Grille des Tarifs";
+        searchPanel.style.display = 'none';
+        ratesPanel.style.display = 'flex';
+        statsBar.style.display = 'none';
+        feedContainer.style.display = 'none';
       } else if (tab === 'favs') {
         pageTitle.innerText = "Mes Favoris";
         searchPanel.style.display = 'none';
+        ratesPanel.style.display = 'none';
+        statsBar.style.display = 'grid';
         feedContainer.style.display = 'grid';
         fetchFavoritesAndRecs();
       } else if (tab === 'stats') {
         pageTitle.innerText = "Statistiques Globale";
         searchPanel.style.display = 'none';
+        ratesPanel.style.display = 'none';
+        statsBar.style.display = 'grid';
         feedContainer.style.display = 'grid';
         fetchStats();
       }

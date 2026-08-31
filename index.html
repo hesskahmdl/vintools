@@ -28,7 +28,6 @@
       overflow: hidden;
     }
 
-    /* Sidebar Desktop */
     .sidebar {
       width: 250px;
       background-color: #05070a;
@@ -40,12 +39,7 @@
       flex-shrink: 0;
     }
 
-    .brand-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
+    .brand-container { display: flex; align-items: center; gap: 8px; }
     .brand { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
     .brand span { color: var(--accent-green); }
 
@@ -84,7 +78,6 @@
       color: var(--accent-green);
     }
 
-    /* Mobile Navigation */
     .mobile-nav {
       display: none;
       position: fixed;
@@ -113,7 +106,6 @@
 
     .mobile-nav-btn.active { color: var(--accent-green); }
 
-    /* Main Container */
     .main-content { 
       flex: 1; 
       padding: 20px; 
@@ -130,13 +122,8 @@
       gap: 10px;
     }
 
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .header-controls { display: flex; align-items: center; gap: 10px; }
 
-    /* Barre de recherche unique */
     .single-search-box {
       display: flex;
       align-items: center;
@@ -167,7 +154,6 @@
       font-size: 0.75rem;
     }
 
-    /* Bouton Pause Flux */
     .btn-pause {
       padding: 8px 14px;
       border-radius: 6px;
@@ -213,7 +199,6 @@
       box-shadow: 0 0 10px var(--pause-red);
     }
 
-    /* Stats Bar */
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -234,7 +219,6 @@
     .stat-box .title { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
     .stat-box .val { font-size: 1.1rem; font-weight: 800; color: var(--accent-green); }
 
-    /* Badge Lauriers & Étoiles Style Fyndit */
     .badge-rating-container {
       display: flex;
       flex-direction: column;
@@ -243,51 +227,14 @@
       margin: 15px 0 25px 0;
     }
 
-    .badge-rating-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .badge-rating-content { display: flex; align-items: center; gap: 12px; }
+    .laurel-icon { width: 28px; height: 40px; fill: #d97706; }
+    .badge-rating-details { display: flex; flex-direction: column; align-items: center; }
+    .badge-title { font-size: 0.95rem; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; }
+    .badge-stars { display: flex; gap: 2px; margin: 3px 0; }
+    .badge-star-icon { width: 14px; height: 14px; fill: #ffb703; }
+    .badge-subtitle { font-size: 0.65rem; color: #94a3b8; font-weight: 700; letter-spacing: 1px; }
 
-    .laurel-icon {
-      width: 28px;
-      height: 40px;
-      fill: #d97706;
-    }
-
-    .badge-rating-details {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .badge-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: 0.5px;
-    }
-
-    .badge-stars {
-      display: flex;
-      gap: 2px;
-      margin: 3px 0;
-    }
-
-    .badge-star-icon {
-      width: 14px;
-      height: 14px;
-      fill: #ffb703;
-    }
-
-    .badge-subtitle {
-      font-size: 0.65rem;
-      color: #94a3b8;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-
-    /* Target Box Coming Soon (Tarifs) */
     .coming-soon-container {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -315,12 +262,8 @@
       box-shadow: 0 0 15px rgba(0, 255, 163, 0.2);
     }
 
-    .coming-soon-text {
-      color: var(--text-muted);
-      font-size: 0.85rem;
-    }
+    .coming-soon-text { color: var(--text-muted); font-size: 0.85rem; }
 
-    /* Multi-Search Container */
     .multi-search-container {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -362,7 +305,6 @@
 
     .btn-apply:hover { background-color: var(--accent-green-hover); }
 
-    /* Grid Responsive */
     .feed-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -376,7 +318,6 @@
       }
     }
 
-    /* Carte Article */
     .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -426,29 +367,10 @@
     
     .location-info { font-size: 0.7rem; color: #64748b; display: flex; align-items: center; gap: 4px; }
 
-    /* Style des Étoiles Vectorielles SVG */
-    .seller-stars-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 1px;
-      margin-left: 2px;
-    }
-    
-    .star-icon {
-      width: 11px;
-      height: 11px;
-      fill: #334155;
-    }
-    
-    .star-icon.filled {
-      fill: var(--star-color);
-    }
-    
-    .rating-text {
-      font-size: 0.68rem;
-      color: #64748b;
-      margin-left: 2px;
-    }
+    .seller-stars-container { display: inline-flex; align-items: center; gap: 1px; margin-left: 2px; }
+    .star-icon { width: 11px; height: 11px; fill: #334155; }
+    .star-icon.filled { fill: var(--star-color); }
+    .rating-text { font-size: 0.68rem; color: #64748b; margin-left: 2px; }
 
     .condition-badge {
       display: inline-block;
@@ -531,7 +453,6 @@
       </div>
     </div>
 
-    <!-- Badge d'Étoiles & Lauriers -->
     <div class="badge-rating-container">
       <div class="badge-rating-content">
         <svg class="laurel-icon" viewBox="0 0 24 32">
@@ -556,7 +477,6 @@
       </div>
     </div>
 
-    <!-- Encart Tarifs -->
     <div class="coming-soon-container" id="rates-panel" style="display: none;">
       <div class="coming-soon-badge">Coming Soon</div>
       <div class="coming-soon-text">Les offres et plans d'abonnement seront bientôt disponibles.</div>
@@ -613,6 +533,25 @@
     let localFavs = [];
     let isPaused = false;
 
+    // Gestion du Session ID unique stocké localement
+    function getSessionId() {
+      let sid = localStorage.getItem('sk_user_session_id');
+      if (!sid) {
+        sid = 'user_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+        localStorage.setItem('sk_user_session_id', sid);
+      }
+      return sid;
+    }
+
+    const sessionId = getSessionId();
+
+    async function apiFetch(endpoint, options = {}) {
+      options.headers = options.headers || {};
+      options.headers['X-Session-ID'] = sessionId;
+      options.headers['ngrok-skip-browser-warning'] = 'true';
+      return fetch(`${API_URL}${endpoint}`, options);
+    }
+
     document.getElementById('quick-search-input').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         applyQuickSearch();
@@ -647,9 +586,9 @@
       document.getElementById('feed').innerHTML = '<div style="color: var(--accent-green); grid-column: 1/-1;">Recherche en cours pour "' + val + '"...</div>';
 
       try {
-        await fetch(`${API_URL}/api/config`, {
+        await apiFetch('/api/config', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ single_keyword: val })
         });
         if (isPaused) togglePause();
@@ -662,7 +601,7 @@
 
     async function loadCurrentConfig() {
       try {
-        const res = await fetch(`${API_URL}/api/config`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+        const res = await apiFetch('/api/config');
         const data = await res.json();
         if (data.keywords && Array.isArray(data.keywords)) {
           data.keywords.forEach((kw, index) => {
@@ -732,9 +671,7 @@
     async function fetchItems() {
       if (currentTab !== 'feed' || isPaused) return;
       try {
-        const response = await fetch(`${API_URL}/api/feed`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
-        });
+        const response = await apiFetch('/api/feed');
         if (!response.ok) return;
         
         const data = await response.json();
@@ -755,8 +692,8 @@
     async function fetchFavoritesAndRecs() {
       try {
         const [favRes, recRes] = await Promise.all([
-          fetch(`${API_URL}/api/favorites`, { headers: { 'ngrok-skip-browser-warning': 'true' } }),
-          fetch(`${API_URL}/api/recommendations`, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+          apiFetch('/api/favorites'),
+          apiFetch('/api/recommendations')
         ]);
 
         const favData = await favRes.json();
@@ -774,9 +711,7 @@
 
     async function fetchStats() {
       try {
-        const response = await fetch(`${API_URL}/api/stats`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
-        });
+        const response = await apiFetch('/api/stats');
         const data = await response.json();
         
         const feedContainer = document.getElementById('feed');
@@ -874,12 +809,12 @@
     async function toggleFav(item) {
       const isFav = localFavs.includes(item.id);
       const method = isFav ? 'DELETE' : 'POST';
-      const url = isFav ? `${API_URL}/api/favorites?id=${item.id}` : `${API_URL}/api/favorites`;
+      const url = isFav ? `/api/favorites?id=${item.id}` : `/api/favorites`;
       
       try {
-        await fetch(url, {
+        await apiFetch(url, {
           method: method,
-          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+          headers: { 'Content-Type': 'application/json' },
           body: isFav ? null : JSON.stringify(item)
         });
 
@@ -897,7 +832,6 @@
       } catch (e) { console.error(e); }
     }
 
-    // MODIFICATION : Exécution parallèle avec Promise.all pour un traitement individuel et ultra-rapide
     async function saveMultiConfig() {
       const slots = [
         document.getElementById('slot-0').value.trim(),
@@ -914,22 +848,14 @@
       btn.disabled = true;
 
       try {
-        const activeKeywords = slots.filter(kw => kw !== "");
-
-        // Création d'un tableau de promesses HTTP (une requête dédiée par mot-clé)
-        const requests = activeKeywords.map(kw => 
-          fetch(`${API_URL}/api/config`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
-            body: JSON.stringify({ 
-              keyword: kw,
-              max_price: parsedMaxPrice
-            })
+        await apiFetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            keywords: slots,
+            max_price: parsedMaxPrice
           })
-        );
-
-        // Exécution simultanée de toutes les requêtes
-        await Promise.all(requests);
+        });
 
         if (isPaused) togglePause();
         switchTab('feed');

@@ -424,6 +424,8 @@
     .seller-info { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 0.75rem; color: #94a3b8; flex-wrap: wrap; }
     .seller-avatar { width: 12px; height: 12px; border-radius: 50%; background-color: var(--accent-green); flex-shrink: 0; }
     
+    .location-info { font-size: 0.7rem; color: #64748b; display: flex; align-items: center; gap: 4px; }
+
     /* Style des Étoiles Vectorielles SVG */
     .seller-stars-container {
       display: inline-flex;
@@ -829,6 +831,16 @@
         const isFav = localFavs.includes(item.id);
         const sellerRating = item.seller_rating || item.rating || item.seller_score || null;
         const starsHTML = generateStarsSVG(sellerRating);
+        
+        // Construction de la chaîne de localisation (Ville, Pays)
+        const city = item.city || item.location || '';
+        const country = item.country || '';
+        let locationText = '';
+        if (city && country) {
+          locationText = `${city}, ${country}`;
+        } else {
+          locationText = city || country || '';
+        }
 
         htmlContent += `
           <div class="card">
@@ -845,6 +857,8 @@
                 <span>${item.seller}</span>
                 ${starsHTML}
               </div>
+
+              ${locationText ? `<div class="location-info">📍 ${locationText}</div>` : ''}
 
               <div class="condition-badge">${item.condition}</div>
 

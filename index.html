@@ -614,23 +614,8 @@
     let currentTab = 'feed';
     let localFavs = [];
     let isPaused = false;
-    let lastRenderedItemsJson = "";
 
-    // --- IDENTIFIANT UNIQUE PAR UTILISATEUR ---
-    let userId = localStorage.getItem('sk_tools_user_id');
-    if (!userId) {
-      userId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-      localStorage.setItem('sk_tools_user_id', userId);
-    }
-
-    function getHeaders(extraHeaders = {}) {
-      return {
-        'ngrok-skip-browser-warning': 'true',
-        'X-User-ID': userId,
-        ...extraHeaders
-      };
-    }
-
+    // Déclenchement de la recherche rapide avec 'Entrée'
     document.getElementById('quick-search-input').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         applyQuickSearch();
@@ -662,18 +647,17 @@
       const val = document.getElementById('quick-search-input').value.trim();
       if (!val) return;
       
-      lastRenderedItemsJson = "";
       document.getElementById('feed').innerHTML = '<div style="color: var(--accent-green); grid-column: 1/-1;">Recherche en cours pour "' + val + '"...</div>';
 
       try {
         await fetch(`${API_URL}/api/config`, {
           method: 'POST',
-          headers: getHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
           body: JSON.stringify({ single_keyword: val })
         });
         if (isPaused) togglePause();
         switchTab('feed');
-        setTimeout(fetchItems, 400);
+        setTimeout(fetchItems, 600);
       } catch (e) {
         console.error("Erreur recherche rapide :", e);
       }
@@ -681,7 +665,7 @@
 
     async function loadCurrentConfig() {
       try {
-        const res = await fetch(`${API_URL}/api/config`, { headers: getHeaders() });
+        const res = await fetch(`${API_URL}/api/config`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
         const data = await res.json();
         if (data.keywords && Array.isArray(data.keywords)) {
           data.keywords.forEach((kw, index) => {
@@ -697,7 +681,6 @@
 
     function switchTab(tab) {
       currentTab = tab;
-      lastRenderedItemsJson = "";
       
       document.querySelectorAll('.menu-item, .mobile-nav-btn').forEach(el => el.classList.remove('active'));
       
@@ -753,20 +736,12 @@
       if (currentTab !== 'feed' || isPaused) return;
       try {
         const response = await fetch(`${API_URL}/api/feed`, {
-          headers: getHeaders()
+          headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         if (!response.ok) return;
         
         const data = await response.json();
-        
-        // Anti-vide : Si l'API retourne une liste vide, on conserve l'affichage actuel
-        if (!data.items || data.items.length === 0) {
-          if (document.getElementById('feed').children.length > 0 && !document.getElementById('feed').innerText.includes("Chargement")) {
-            return;
-          }
-        }
-
-        document.getElementById('items-count').innerText = data.displayed_count || (data.items ? data.items.length : 0);
+        document.getElementById('items-count').innerText = data.displayed_count;
         
         if (data.stats) {
           document.getElementById('stat-avg').innerText = `${data.stats.avg_price} €`;
@@ -783,8 +758,8 @@
     async function fetchFavoritesAndRecs() {
       try {
         const [favRes, recRes] = await Promise.all([
-          fetch(`${API_URL}/api/favorites`, { headers: getHeaders() }),
-          fetch(`${API_URL}/api/recommendations`, { headers: getHeaders() })
+          fetch(`${API_URL}/api/favorites`, { headers: { 'ngrok-skip-browser-warning': 'true' } }),
+          fetch(`${API_URL}/api/recommendations`, { headers: { 'ngrok-skip-browser-warning': 'true' } })
         ]);
 
         const favData = await favRes.json();
@@ -803,7 +778,7 @@
     async function fetchStats() {
       try {
         const response = await fetch(`${API_URL}/api/stats`, {
-          headers: getHeaders()
+          headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         const data = await response.json();
         
@@ -812,7 +787,7 @@
           <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; grid-column: 1/-1;">
             <h3 style="margin-bottom: 10px; color: var(--accent-green);">Statistiques du Scraper</h3>
             <p style="margin-bottom: 8px;"><strong>Dernière mise à jour :</strong> ${data.last_check || 'En cours'}</p>
-            <p style="margin-bottom: 8px;"><strong>Recherches actives :</strong> ${data.active_keywords ? data.active_keywords.join(', ') : 'Aucune'}</p>
+            <p style="margin-bottom: 8px;"><strong>Recherches actives :</strong> ${data.active_keywords.join(', ') || 'Aucune'}</p>
             <p style="margin-bottom: 8px;"><strong>Filtre Prix Max :</strong> ${data.max_price_filter ? data.max_price_filter + ' €' : 'Aucun'}</p>
             <p style="margin-bottom: 8px;"><strong>Prix Moyen :</strong> ${data.avg_price} €</p>
             <p style="margin-bottom: 8px;"><strong>Prix Min / Max :</strong> ${data.min_price} € / ${data.max_price} €</p>
@@ -822,6 +797,7 @@
       } catch (e) { console.error(e); }
     }
 
+    // Générateur d'étoiles SVG réelles
     function generateStarsSVG(rating) {
       if (rating === undefined || rating === null || rating === '') return '';
       const numRating = parseFloat(rating);
@@ -846,16 +822,9 @@
     function renderItems(items) {
       const feedContainer = document.getElementById('feed');
       if (!items || items.length === 0) {
-        if (!feedContainer.innerHTML || feedContainer.innerText.includes("Chargement")) {
-          feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé...</div>';
-        }
+        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé...</div>';
         return;
       }
-
-      // Évite le re-rendu inutile si les annonces sont exactement identiques
-      const currentJson = JSON.stringify(items.map(i => i.id + '_' + i.price));
-      if (currentJson === lastRenderedItemsJson) return;
-      lastRenderedItemsJson = currentJson;
 
       let htmlContent = '';
       items.forEach(item => {
@@ -863,6 +832,7 @@
         const sellerRating = item.seller_rating || item.rating || item.seller_score || null;
         const starsHTML = generateStarsSVG(sellerRating);
         
+        // Construction de la chaîne de localisation (Ville, Pays)
         const city = item.city || item.location || '';
         const country = item.country || '';
         let locationText = '';
@@ -914,7 +884,7 @@
       try {
         await fetch(url, {
           method: method,
-          headers: getHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
           body: isFav ? null : JSON.stringify(item)
         });
 
@@ -924,7 +894,6 @@
           localFavs.push(item.id);
         }
 
-        lastRenderedItemsJson = "";
         if (currentTab === 'favs') {
           fetchFavoritesAndRecs();
         } else {
@@ -934,24 +903,31 @@
     }
 
     async function saveMultiConfig() {
-      const keywords = [
-        document.getElementById('slot-0').value,
-        document.getElementById('slot-1').value,
-        document.getElementById('slot-2').value,
-        document.getElementById('slot-3').value,
-        document.getElementById('slot-4').value,
+      const slots = [
+        document.getElementById('slot-0').value.trim(),
+        document.getElementById('slot-1').value.trim(),
+        document.getElementById('slot-2').value.trim(),
+        document.getElementById('slot-3').value.trim(),
+        document.getElementById('slot-4').value.trim(),
       ];
       const maxPrice = document.getElementById('max-price-input').value;
+      const parsedMaxPrice = maxPrice !== "" ? parseFloat(maxPrice) : null;
 
       try {
-        await fetch(`${API_URL}/api/config`, {
-          method: 'POST',
-          headers: getHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ 
-            keywords: keywords,
-            max_price: maxPrice !== "" ? parseFloat(maxPrice) : null
-          })
-        });
+        // Envoi de chaque terme de recherche dans des requêtes distinctes et individuelles
+        const activeKeywords = slots.filter(kw => kw !== "");
+        
+        for (const kw of activeKeywords) {
+          await fetch(`${API_URL}/api/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+            body: JSON.stringify({ 
+              keyword: kw,
+              max_price: parsedMaxPrice
+            })
+          });
+        }
+
         if (isPaused) togglePause();
         switchTab('feed');
       } catch (e) {

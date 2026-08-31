@@ -428,7 +428,7 @@
       
       <div class="slot-row">
         <span class="slot-label" style="color: #ff4757;">Prix Max (€) :</span>
-        <input type="number" id="solo-max-price" class="filter-input" placeholder="Ex: 100 (Ne change plus tout seul)">
+        <input type="number" id="solo-max-price" class="filter-input" placeholder="Ex: 100">
       </div>
 
       <div class="slot-row">
@@ -476,15 +476,15 @@
       <div class="slot-row">
         <span class="slot-label">Alerte Son :</span>
         <select id="filter-sound" class="filter-select">
-          <option value="on">Activé 🔥 (Bip sur les affaires)</option>
           <option value="off">Désactivé</option>
+          <option value="on">Activé 🔥 (Bip sur les affaires)</option>
         </select>
       </div>
 
       <button onclick="saveMultiConfig()" class="btn-apply">Appliquer la Multi-Recherche</button>
     </div>
 
-    <!-- Zone du Fil d'Actualité avec Pause Automatique au Survol -->
+    <!-- Zone du Fil d'Actualité -->
     <div class="feed-grid" id="feed" onmouseenter="setHoverPause(true)" onmouseleave="setHoverPause(false)">
       <div style="color: #64748b; grid-column: 1/-1;">Chargement du flux ultra-rapide...</div>
     </div>
@@ -521,17 +521,14 @@
     let currentAvgPrice = 0;
     let lastRenderedItems = []; 
 
-    // Maintien local du Filtre Prix Max pour éviter qu'il change tout seul
     let userMaxPrice = null;
     let userBlacklist = [];
     let userSizeFilter = "";
     let userConditionFilter = "";
 
-    // Maintien du flux (anti-perte d'articles)
     let isFrozen = false;
     let isHovered = false;
 
-    // Syntétiseur de son alerte d'affaire
     function playSaleSound() {
       if (document.getElementById('filter-sound').value === 'off') return;
       try {
@@ -689,19 +686,13 @@
       
       let itemsToProcess = (rawItems && rawItems.length > 0) ? rawItems : lastRenderedItems;
 
-      // Appliquer les filtres V-Tools côté client pour éviter que les prix changent tout seul
       if (!bypassFilters) {
         itemsToProcess = itemsToProcess.filter(item => {
           const price = parseFloat(item.price) || 0;
           const titleLower = (item.title || "").toLowerCase();
           
-          // Filtre Prix Max Stabile
           if (userMaxPrice !== null && price > userMaxPrice) return false;
-
-          // Filtre Mots banni
           if (userBlacklist.some(word => word && titleLower.includes(word.toLowerCase()))) return false;
-
-          // Filtre Taille
           if (userSizeFilter && item.size && !item.size.toLowerCase().includes(userSizeFilter.toLowerCase())) return false;
 
           return true;
@@ -716,7 +707,7 @@
       document.getElementById('items-count').innerText = itemsToDisplay.length;
 
       if (!itemsToDisplay || itemsToDisplay.length === 0) {
-        return; // Ne jamais vider l'écran
+        return;
       }
 
       let hasNewSale = false;
@@ -725,16 +716,12 @@
         const isFav = localFavs.includes(item.id);
         const itemPrice = parseFloat(item.price) || 0;
         
-        // Détection Affaire 🔥
         const isSale = currentAvgPrice > 0 && itemPrice <= (currentAvgPrice * 0.85);
         if (isSale) hasNewSale = true;
 
-        // Estimation Marge de Revente (+30%)
         const estimatedResell = Math.round(itemPrice * 1.35);
-
-        // URL Direct Checkout 1-Click
         const buyUrl = item.url;
-        const buyNowUrl = item.url ? `${item.url}/buy` : '#';
+        const buyNowUrl = item.buy_url || (item.url ? `${item.url}/buy` : '#');
 
         htmlContent += `
           <div class="card">
@@ -856,7 +843,6 @@
     }
 
     fetchItems();
-    // Vitesse boostée : rafraîchissement ultra-fast (800ms)
     setInterval(() => {
       if (currentTab === 'feed') fetchItems();
     }, 800);

@@ -28,6 +28,7 @@
       overflow: hidden;
     }
 
+    /* Sidebar Desktop */
     .sidebar {
       width: 250px;
       background-color: #05070a;
@@ -39,7 +40,12 @@
       flex-shrink: 0;
     }
 
-    .brand-container { display: flex; align-items: center; gap: 8px; }
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .brand { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
     .brand span { color: var(--accent-green); }
 
@@ -78,6 +84,7 @@
       color: var(--accent-green);
     }
 
+    /* Mobile Navigation */
     .mobile-nav {
       display: none;
       position: fixed;
@@ -106,6 +113,7 @@
 
     .mobile-nav-btn.active { color: var(--accent-green); }
 
+    /* Main Container */
     .main-content { 
       flex: 1; 
       padding: 20px; 
@@ -122,8 +130,13 @@
       gap: 10px;
     }
 
-    .header-controls { display: flex; align-items: center; gap: 10px; }
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
+    /* Barre de recherche unique */
     .single-search-box {
       display: flex;
       align-items: center;
@@ -154,6 +167,7 @@
       font-size: 0.75rem;
     }
 
+    /* Bouton Pause Flux */
     .btn-pause {
       padding: 8px 14px;
       border-radius: 6px;
@@ -199,6 +213,7 @@
       box-shadow: 0 0 10px var(--pause-red);
     }
 
+    /* Stats Bar */
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -219,6 +234,7 @@
     .stat-box .title { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
     .stat-box .val { font-size: 1.1rem; font-weight: 800; color: var(--accent-green); }
 
+    /* Badge Lauriers & Étoiles Style Fyndit */
     .badge-rating-container {
       display: flex;
       flex-direction: column;
@@ -227,14 +243,51 @@
       margin: 15px 0 25px 0;
     }
 
-    .badge-rating-content { display: flex; align-items: center; gap: 12px; }
-    .laurel-icon { width: 28px; height: 40px; fill: #d97706; }
-    .badge-rating-details { display: flex; flex-direction: column; align-items: center; }
-    .badge-title { font-size: 0.95rem; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; }
-    .badge-stars { display: flex; gap: 2px; margin: 3px 0; }
-    .badge-star-icon { width: 14px; height: 14px; fill: #ffb703; }
-    .badge-subtitle { font-size: 0.65rem; color: #94a3b8; font-weight: 700; letter-spacing: 1px; }
+    .badge-rating-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
+    .laurel-icon {
+      width: 28px;
+      height: 40px;
+      fill: #d97706;
+    }
+
+    .badge-rating-details {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .badge-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-stars {
+      display: flex;
+      gap: 2px;
+      margin: 3px 0;
+    }
+
+    .badge-star-icon {
+      width: 14px;
+      height: 14px;
+      fill: #ffb703;
+    }
+
+    .badge-subtitle {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* Target Box Coming Soon (Tarifs) */
     .coming-soon-container {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -262,8 +315,12 @@
       box-shadow: 0 0 15px rgba(0, 255, 163, 0.2);
     }
 
-    .coming-soon-text { color: var(--text-muted); font-size: 0.85rem; }
+    .coming-soon-text {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
 
+    /* Multi-Search Container */
     .multi-search-container {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -305,6 +362,7 @@
 
     .btn-apply:hover { background-color: var(--accent-green-hover); }
 
+    /* Grid Responsive */
     .feed-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -318,6 +376,7 @@
       }
     }
 
+    /* Carte Article */
     .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -367,10 +426,29 @@
     
     .location-info { font-size: 0.7rem; color: #64748b; display: flex; align-items: center; gap: 4px; }
 
-    .seller-stars-container { display: inline-flex; align-items: center; gap: 1px; margin-left: 2px; }
-    .star-icon { width: 11px; height: 11px; fill: #334155; }
-    .star-icon.filled { fill: var(--star-color); }
-    .rating-text { font-size: 0.68rem; color: #64748b; margin-left: 2px; }
+    /* Style des Étoiles Vectorielles SVG */
+    .seller-stars-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 1px;
+      margin-left: 2px;
+    }
+    
+    .star-icon {
+      width: 11px;
+      height: 11px;
+      fill: #334155;
+    }
+    
+    .star-icon.filled {
+      fill: var(--star-color);
+    }
+    
+    .rating-text {
+      font-size: 0.68rem;
+      color: #64748b;
+      margin-left: 2px;
+    }
 
     .condition-badge {
       display: inline-block;
@@ -511,11 +589,11 @@
         <input type="number" id="max-price-input" class="filter-input" placeholder="Ex: 40">
       </div>
 
-      <button onclick="saveMultiConfig()" class="btn-apply" id="btn-save-multi">Appliquer les modifications</button>
+      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les modifications</button>
     </div>
 
     <div class="feed-grid" id="feed">
-      <div style="color: #64748b; grid-column: 1/-1;">Initialisation du moniteur en direct...</div>
+      <div style="color: #64748b; grid-column: 1/-1;">Chargement des annonces...</div>
     </div>
   </div>
 
@@ -532,20 +610,15 @@
     let currentTab = 'feed';
     let localFavs = [];
     let isPaused = false;
-    let hasLoadedInitialFeed = false;
-    let isFetchingFeed = false;
 
-    function getSessionId() {
-      let sid = localStorage.getItem('sk_user_session_id');
-      if (!sid) {
-        sid = 'user_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
-        localStorage.setItem('sk_user_session_id', sid);
-      }
-      return sid;
+    // Gestion de la Session ID Individuelle
+    let sessionId = localStorage.getItem('sk_session_id');
+    if (!sessionId) {
+      sessionId = 'user_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('sk_session_id', sessionId);
     }
 
-    const sessionId = getSessionId();
-
+    // Helper pour fetch avec Session ID inclus automatiquement dans le header
     async function apiFetch(endpoint, options = {}) {
       options.headers = options.headers || {};
       options.headers['X-Session-ID'] = sessionId;
@@ -584,8 +657,7 @@
       const val = document.getElementById('quick-search-input').value.trim();
       if (!val) return;
       
-      hasLoadedInitialFeed = false;
-      document.getElementById('feed').innerHTML = '<div style="color: var(--accent-green); grid-column: 1/-1;">Recherche ultra-rapide en cours pour "' + val + '"...</div>';
+      document.getElementById('feed').innerHTML = '<div style="color: var(--accent-green); grid-column: 1/-1;">Recherche en cours pour "' + val + '"...</div>';
 
       try {
         await apiFetch('/api/config', {
@@ -595,7 +667,7 @@
         });
         if (isPaused) togglePause();
         switchTab('feed');
-        fetchItems();
+        setTimeout(fetchItems, 300);
       } catch (e) {
         console.error("Erreur recherche rapide :", e);
       }
@@ -671,14 +743,13 @@
     }
 
     async function fetchItems() {
-      if (currentTab !== 'feed' || isPaused || isFetchingFeed) return;
-      isFetchingFeed = true;
+      if (currentTab !== 'feed' || isPaused) return;
       try {
         const response = await apiFetch('/api/feed');
         if (!response.ok) return;
         
         const data = await response.json();
-        document.getElementById('items-count').innerText = data.displayed_count || 0;
+        document.getElementById('items-count').innerText = data.displayed_count;
         
         if (data.stats) {
           document.getElementById('stat-avg').innerText = `${data.stats.avg_price} €`;
@@ -686,17 +757,9 @@
           document.getElementById('stat-max').innerText = `${data.stats.max_price} €`;
         }
 
-        // On ne remplace que s'il y a des articles ou si c'est la toute première recherche
-        if (data.items && data.items.length > 0) {
-          hasLoadedInitialFeed = true;
-          renderItems(data.items);
-        } else if (!hasLoadedInitialFeed) {
-          document.getElementById('feed').innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Recherche d\'articles en cours sur Vinted...</div>';
-        }
+        renderItems(data.items);
       } catch (error) {
         console.error("Erreur flux :", error);
-      } finally {
-        isFetchingFeed = false;
       }
     }
 
@@ -710,8 +773,8 @@
         const favData = await favRes.json();
         const recData = await recRes.json();
         
-        localFavs = (favData.favorites || []).map(f => f.id);
-        const combined = [...(favData.favorites || []), ...(recData.items || [])].slice(0, 40);
+        localFavs = favData.favorites.map(f => f.id);
+        const combined = [...favData.favorites, ...recData.items].slice(0, 40);
         
         document.getElementById('items-count').innerText = combined.length;
         renderItems(combined);
@@ -764,9 +827,7 @@
     function renderItems(items) {
       const feedContainer = document.getElementById('feed');
       if (!items || items.length === 0) {
-        if (!hasLoadedInitialFeed) {
-          feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé pour le moment...</div>';
-        }
+        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé...</div>';
         return;
       }
 
@@ -822,10 +883,10 @@
     async function toggleFav(item) {
       const isFav = localFavs.includes(item.id);
       const method = isFav ? 'DELETE' : 'POST';
-      const url = isFav ? `/api/favorites?id=${item.id}` : `/api/favorites`;
+      const endpoint = isFav ? `/api/favorites?id=${item.id}` : `/api/favorites`;
       
       try {
-        await apiFetch(url, {
+        await apiFetch(endpoint, {
           method: method,
           headers: { 'Content-Type': 'application/json' },
           body: isFav ? null : JSON.stringify(item)
@@ -846,38 +907,28 @@
     }
 
     async function saveMultiConfig() {
-      const slots = [
-        document.getElementById('slot-0').value.trim(),
-        document.getElementById('slot-1').value.trim(),
-        document.getElementById('slot-2').value.trim(),
-        document.getElementById('slot-3').value.trim(),
-        document.getElementById('slot-4').value.trim(),
+      const keywords = [
+        document.getElementById('slot-0').value,
+        document.getElementById('slot-1').value,
+        document.getElementById('slot-2').value,
+        document.getElementById('slot-3').value,
+        document.getElementById('slot-4').value,
       ];
       const maxPrice = document.getElementById('max-price-input').value;
-      const parsedMaxPrice = maxPrice !== "" ? parseFloat(maxPrice) : null;
-      
-      const btn = document.getElementById('btn-save-multi');
-      btn.innerText = "Application...";
-      btn.disabled = true;
-      hasLoadedInitialFeed = false;
 
       try {
         await apiFetch('/api/config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            keywords: slots,
-            max_price: parsedMaxPrice
+            keywords: keywords,
+            max_price: maxPrice !== "" ? parseFloat(maxPrice) : null
           })
         });
-
         if (isPaused) togglePause();
         switchTab('feed');
       } catch (e) {
         console.error("Erreur config :", e);
-      } finally {
-        btn.innerText = "Appliquer les modifications";
-        btn.disabled = false;
       }
     }
 

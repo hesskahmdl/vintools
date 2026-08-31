@@ -218,6 +218,7 @@
       </div>
     </div>
 
+    <!-- Filtres Dynamiques -->
     <div class="filter-box">
       <input type="text" id="search-keyword" class="filter-input" placeholder="Mot-clé (ex: Nike, Adidas)" value="nike" style="flex: 2;">
       <input type="number" id="max-price" class="filter-input" placeholder="Prix Max (€)" value="30" style="flex: 1;">
@@ -225,30 +226,36 @@
     </div>
 
     <div class="feed-grid" id="feed">
-      </div>
+      <div style="color: #64748b; grid-column: 1/-1;">Chargement des articles...</div>
+    </div>
   </div>
 
   <script>
-    // Ton URL Ngrok sécurisée
     const API_URL = 'https://synonymously-additional-jaxon.ngrok-free.dev';
 
     async function fetchItems() {
       try {
-        const response = await fetch(`${API_URL}/api/feed`);
+        const response = await fetch(`${API_URL}/api/feed`, {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
+        
+        if (!response.ok) throw new Error("Erreur réseau");
+        
         const data = await response.json();
         
         document.getElementById('items-count').innerText = data.count;
         const feedContainer = document.getElementById('feed');
         
-        if (data.items.length === 0) {
+        if (!data.items || data.items.length === 0) {
           feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Recherche en cours d\'articles correspondant à tes critères...</div>';
           return;
         }
 
-        feedContainer.innerHTML = '';
-
+        let htmlContent = '';
         data.items.forEach(item => {
-          const cardHTML = `
+          htmlContent += `
             <div class="card">
               <div class="card-img-container">
                 <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
@@ -273,11 +280,12 @@
               <a href="${item.url}" target="_blank" class="btn-buy">Acheter</a>
             </div>
           `;
-          feedContainer.innerHTML += cardHTML;
         });
 
+        feedContainer.innerHTML = htmlContent;
+
       } catch (error) {
-        console.error("Erreur de connexion au serveur local :", error);
+        console.error("Erreur de connexion :", error);
       }
     }
 
@@ -285,17 +293,23 @@
       const keyword = document.getElementById('search-keyword').value;
       const maxPrice = document.getElementById('max-price').value;
 
-      await fetch(`${API_URL}/api/config`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword: keyword, max_price: maxPrice })
-      });
+      try {
+        await fetch(`${API_URL}/api/config`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
+          body: JSON.stringify({ keyword: keyword, max_price: maxPrice })
+        });
+      } catch (e) {
+        console.error("Erreur mise à jour config :", e);
+      }
 
-      document.getElementById('feed').innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Mise à jour des filtres...</div>';
       fetchItems();
     }
 
-    // Rafraîchissement automatique toutes les 2 secondes
+    // Exécution initiale et intervalle de 2s
     fetchItems();
     setInterval(fetchItems, 2000);
   </script>

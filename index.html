@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>V-Tools Live Monitor</title>
+  <title>SK Tools</title>
   <style>
     :root {
       --bg-dark: #080a0d;
@@ -64,7 +64,7 @@
       color: var(--accent-green);
     }
 
-    /* Barre de Navigation Mobile */
+    /* Mobile Navigation */
     .mobile-nav {
       display: none;
       position: fixed;
@@ -98,14 +98,14 @@
       flex: 1; 
       padding: 20px; 
       overflow-y: auto; 
-      padding-bottom: 80px; /* Espace pour la navbar mobile */
+      padding-bottom: 80px;
     }
 
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       flex-wrap: wrap;
       gap: 10px;
     }
@@ -129,7 +129,28 @@
       box-shadow: 0 0 10px var(--accent-green);
     }
 
-    /* Multi-Recherche Panel (5 slots) */
+    /* Stats Bar (Prix Moyen, Min, Max) */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-box .title { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
+    .stat-box .val { font-size: 1.1rem; font-weight: 800; color: var(--accent-green); }
+
+    /* Multi-Search Container */
     .multi-search-container {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -151,7 +172,7 @@
       font-size: 0.8rem;
       font-weight: 700;
       color: var(--accent-green);
-      width: 60px;
+      width: 80px;
     }
 
     .filter-input {
@@ -236,12 +257,9 @@
     }
 
     .card-img { width: 100%; height: 100%; object-fit: cover; }
-
     .card-details { display: flex; flex-direction: column; gap: 4px; }
-    
     .brand-size { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
     .card-title { font-size: 0.8rem; font-weight: 600; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
     .seller-info { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 0.75rem; color: #94a3b8; }
     .seller-avatar { width: 12px; height: 12px; border-radius: 50%; background-color: var(--accent-green); }
 
@@ -257,7 +275,6 @@
 
     .price-container { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
     .price-main { font-size: 1rem; font-weight: 700; color: #fff; }
-
     .time-tag { font-size: 0.7rem; color: var(--accent-green); font-weight: 600; }
 
     .btn-buy {
@@ -278,7 +295,6 @@
 
     .btn-buy:hover { background-color: var(--accent-green-hover); }
 
-    /* Responsive adjustments */
     @media (max-width: 768px) {
       body { flex-direction: column; }
       .sidebar { display: none; }
@@ -292,12 +308,12 @@
 
   <!-- Sidebar Desktop -->
   <div class="sidebar">
-    <div class="brand"><span>v</span>tools</div>
+    <div class="brand"><span>SK</span> tools</div>
     
     <div class="menu-group">
       <div class="menu-title">Vinted Monitor</div>
-      <button onclick="switchTab('feed')" id="tab-feed" class="menu-item active">Fil d'actualité</button>
-      <button onclick="switchTab('search')" id="tab-search" class="menu-item">Multi-Recherche (5 Slots)</button>
+      <button onclick="switchTab('feed')" id="tab-feed" class="menu-item active">Fil (Max 40)</button>
+      <button onclick="switchTab('search')" id="tab-search" class="menu-item">Multi-Recherche & Prix</button>
       <button onclick="switchTab('favs')" id="tab-favs" class="menu-item">Favoris</button>
       <button onclick="switchTab('stats')" id="tab-stats" class="menu-item">Statistiques</button>
     </div>
@@ -309,19 +325,42 @@
       <h2 id="page-title">Fil d'actualité en direct</h2>
       <div class="status-pill">
         <div class="status-dot"></div>
-        Scraper : Actif (<span id="items-count">0</span> articles)
+        Scraper : Actif (<span id="items-count">0</span>/40 affichés)
       </div>
     </div>
 
-    <!-- Onglet Multi-Recherche (5 Cases) -->
+    <!-- Barre de Prix Moyen / Min / Max -->
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-box">
+        <span class="title">Prix Moyen</span>
+        <span class="val" id="stat-avg">0.00 €</span>
+      </div>
+      <div class="stat-box">
+        <span class="title">Prix Min</span>
+        <span class="val" id="stat-min" style="color: #64748b;">0.00 €</span>
+      </div>
+      <div class="stat-box">
+        <span class="title">Prix Max</span>
+        <span class="val" id="stat-max" style="color: #64748b;">0.00 €</span>
+      </div>
+    </div>
+
+    <!-- Multi-Recherche + Prix Max -->
     <div class="multi-search-container" id="multi-search-panel" style="display: none;">
-      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Définir 5 recherches en parallèle :</h3>
-      <div class="slot-row"><span class="slot-label">Slot 1:</span><input type="text" id="slot-0" class="filter-input" placeholder="Ex: Nike running"></div>
-      <div class="slot-row"><span class="slot-label">Slot 2:</span><input type="text" id="slot-1" class="filter-input" placeholder="Ex: Adidas campus"></div>
-      <div class="slot-row"><span class="slot-label">Slot 3:</span><input type="text" id="slot-2" class="filter-input" placeholder="Ex: Stussy hoodie"></div>
-      <div class="slot-row"><span class="slot-label">Slot 4:</span><input type="text" id="slot-3" class="filter-input" placeholder="Ex: Dunk low"></div>
-      <div class="slot-row"><span class="slot-label">Slot 5:</span><input type="text" id="slot-4" class="filter-input" placeholder="Ex: Carhartt jacket"></div>
-      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les 5 recherches</button>
+      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Recherches & Filtres :</h3>
+      
+      <div class="slot-row"><span class="slot-label">Slot 1:</span><input type="text" id="slot-0" class="filter-input" placeholder="Ex: nike running"></div>
+      <div class="slot-row"><span class="slot-label">Slot 2:</span><input type="text" id="slot-1" class="filter-input" placeholder="Ex: nike division"></div>
+      <div class="slot-row"><span class="slot-label">Slot 3:</span><input type="text" id="slot-2" class="filter-input" placeholder="Ex: adidas campus"></div>
+      <div class="slot-row"><span class="slot-label">Slot 4:</span><input type="text" id="slot-3" class="filter-input" placeholder="Ex: dunk low"></div>
+      <div class="slot-row"><span class="slot-label">Slot 5:</span><input type="text" id="slot-4" class="filter-input" placeholder="Ex: carhartt jacket"></div>
+      
+      <div class="slot-row" style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+        <span class="slot-label" style="color: #ff4757;">Prix Max (€):</span>
+        <input type="number" id="max-price-input" class="filter-input" placeholder="Ex: 40 (Laissez vide pour désactiver)">
+      </div>
+
+      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les recherches & le filtre</button>
     </div>
 
     <div class="feed-grid" id="feed">
@@ -329,7 +368,7 @@
     </div>
   </div>
 
-  <!-- Bottom Navigation Mobile -->
+  <!-- Bottom Nav Mobile -->
   <div class="mobile-nav">
     <button onclick="switchTab('feed')" id="mob-tab-feed" class="mobile-nav-btn active">
       <span>⚡</span>
@@ -364,6 +403,9 @@
             if (el) el.value = kw;
           });
         }
+        if (data.max_price !== undefined && data.max_price !== null) {
+          document.getElementById('max-price-input').value = data.max_price;
+        }
       } catch (e) { console.error(e); }
     }
 
@@ -382,22 +424,22 @@
       const pageTitle = document.getElementById('page-title');
 
       if (tab === 'feed') {
-        pageTitle.innerText = "Fil d'actualité en direct";
+        pageTitle.innerText = "Fil d'actualité en direct (Max 40)";
         searchPanel.style.display = 'none';
         feedContainer.style.display = 'grid';
         fetchItems();
       } else if (tab === 'search') {
-        pageTitle.innerText = "Multi-Recherche (5 Slots)";
+        pageTitle.innerText = "Multi-Recherche & Filtre Prix";
         searchPanel.style.display = 'flex';
         feedContainer.style.display = 'none';
         loadCurrentConfig();
       } else if (tab === 'favs') {
-        pageTitle.innerText = "Mes Favoris & Recommandations";
+        pageTitle.innerText = "Mes Favoris";
         searchPanel.style.display = 'none';
         feedContainer.style.display = 'grid';
         fetchFavoritesAndRecs();
       } else if (tab === 'stats') {
-        pageTitle.innerText = "Statistiques";
+        pageTitle.innerText = "Statistiques Globale";
         searchPanel.style.display = 'none';
         feedContainer.style.display = 'grid';
         fetchStats();
@@ -413,7 +455,15 @@
         if (!response.ok) return;
         
         const data = await response.json();
-        document.getElementById('items-count').innerText = data.count;
+        document.getElementById('items-count').innerText = data.displayed_count;
+        
+        // Mise à jour des cartes de prix moyen
+        if (data.stats) {
+          document.getElementById('stat-avg').innerText = `${data.stats.avg_price} €`;
+          document.getElementById('stat-min').innerText = `${data.stats.min_price} €`;
+          document.getElementById('stat-max').innerText = `${data.stats.max_price} €`;
+        }
+
         renderItems(data.items);
       } catch (error) {
         console.error("Erreur flux :", error);
@@ -431,7 +481,7 @@
         const recData = await recRes.json();
         
         localFavs = favData.favorites.map(f => f.id);
-        const combined = [...favData.favorites, ...recData.items];
+        const combined = [...favData.favorites, ...recData.items].slice(0, 40);
         
         document.getElementById('items-count').innerText = combined.length;
         renderItems(combined);
@@ -453,7 +503,10 @@
             <h3 style="margin-bottom: 10px; color: var(--accent-green);">Statistiques du Scraper</h3>
             <p style="margin-bottom: 8px;"><strong>Dernière mise à jour :</strong> ${data.last_check || 'En cours'}</p>
             <p style="margin-bottom: 8px;"><strong>Recherches actives :</strong> ${data.active_keywords.join(', ') || 'Aucune'}</p>
-            <p style="margin-bottom: 8px;"><strong>Articles affichés dans le flux :</strong> ${data.current_feed_items}</p>
+            <p style="margin-bottom: 8px;"><strong>Filtre Prix Max :</strong> ${data.max_price_filter ? data.max_price_filter + ' €' : 'Aucun (Tous les prix)'}</p>
+            <p style="margin-bottom: 8px;"><strong>Prix Moyen :</strong> ${data.avg_price} €</p>
+            <p style="margin-bottom: 8px;"><strong>Prix le plus bas / haut :</strong> ${data.min_price} € / ${data.max_price} €</p>
+            <p style="margin-bottom: 8px;"><strong>Articles affichés dans le flux :</strong> ${data.displayed_items} (Max 40)</p>
             <p><strong>Favoris enregistrés :</strong> ${data.total_favorites}</p>
           </div>
         `;
@@ -535,12 +588,16 @@
         document.getElementById('slot-3').value,
         document.getElementById('slot-4').value,
       ];
+      const maxPrice = document.getElementById('max-price-input').value;
 
       try {
         await fetch(`${API_URL}/api/config`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
-          body: JSON.stringify({ keywords: keywords })
+          body: JSON.stringify({ 
+            keywords: keywords,
+            max_price: maxPrice !== "" ? parseFloat(maxPrice) : null
+          })
         });
         switchTab('feed');
       } catch (e) {

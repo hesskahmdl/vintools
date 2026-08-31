@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK Tools - User Dashboard & Scanner IP</title>
+  <style>
+    :root {
+      --bg-dark: #080a0d;
+      --card-bg: #0f131a;
+      --accent-green: #00ffa3;
+      --accent-green-hover: #00cc82;
+      --text-main: #ffffff;
+      --text-muted: #64748b;
+      --border-color: #1a202c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 30px;
+    }
+
+    .dashboard-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .header-title span { color: var(--accent-green); }
+
+    /* Carte Utilisateur Principal */
+    .user-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .user-id-badge {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .user-id-title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .user-id-value {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--accent-green);
+    }
+
+    .scan-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 255, 163, 0.08);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    /* Grille d'informations IP */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .info-box {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .info-box .label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .info-box .val {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      word-break: break-all;
+    }
+
+    /* Historique / Log des connexions */
+    .table-container {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .table-container h3 {
+      font-size: 1rem;
+      color: #94a3b8;
+      margin-bottom: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    th {
+      color: var(--text-muted);
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+      text-transform: uppercase;
+      font-size: 0.7rem;
+    }
+
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #1e293b;
+      color: #e2e8f0;
+    }
+
+    .tag-user {
+      color: var(--accent-green);
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    
+    <div class="header-title">SK <span>Dashboard</span> Scanner</div>
+
+    <!-- Bannière Utilisateur -->
+    <div class="user-card">
+      <div class="user-id-badge">
+        <span class="user-id-title">Identifiant permanent</span>
+        <span class="user-id-value" id="user-display-id">User #----</span>
+      </div>
+      <div class="scan-status">
+        <div class="pulse-dot"></div>
+        <span>Scan IP actif</span>
+      </div>
+    </div>
+
+    <!-- Informations détaillées scannées -->
+    <div class="info-grid">
+      <div class="info-box">
+        <span class="label">Adresse IP</span>
+        <span class="val" id="ip-val">Scan en cours...</span>
+      </div>
+      <div class="info-box">
+        <span class="label">Ville</span>
+        <span class="val" id="city-val">--</span>
+      </div>
+      <div class="info-box">
+        <span class="label">Région / Pays</span>
+        <span class="val" id="country-val">--</span>
+      </div>
+      <div class="info-box">
+        <span class="label">Fournisseur (FAI)</span>
+        <span class="val" id="isp-val">--</span>
+      </div>
+    </div>
+
+    <!-- Tableau de suivi de la session -->
+    <div class="table-container">
+      <h3>Journal du Scanner IP</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>Adresse IP</th>
+            <th>Ville</th>
+            <th>Pays</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody id="logs-tbody">
+          <tr>
+            <td colspan="5" style="color: var(--text-muted);">Acquisition des données de réseau...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    // Algorithme de hachage deterministe : convertit une IP en un chiffre unique fixe (0000 - 9999)
+    function generateFixedUserNumber(ipString) {
+      let hash = 0;
+      for (let i = 0; i < ipString.length; i++) {
+        hash = (hash << 5) - hash + ipString.charCodeAt(i);
+        hash |= 0; 
+      }
+      const positiveHash = Math.abs(hash) % 10000;
+      return String(positiveHash).padStart(4, '0');
+    }
+
+    // Scanner d'IP et géolocalisation
+    async function scanUserIP() {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+
+        const userIP = data.ip || '0.0.0.0';
+        const userCity = data.city || 'Inconnue';
+        const userRegion = data.region || '';
+        const userCountry = data.country_name || 'Inconnu';
+        const userISP = data.org || data.asn || 'Inconnu';
+
+        // Génération du chiffre fixe lié à cette IP
+        const userNumber = generateFixedUserNumber(userIP);
+        const fullUserID = `User #${userNumber}`;
+
+        // Mise à jour de l'affichage du Dashboard
+        document.getElementById('user-display-id').innerText = fullUserID;
+        document.getElementById('ip-val').innerText = userIP;
+        document.getElementById('city-val').innerText = userCity;
+        document.getElementById('country-val').innerText = `${userRegion ? userRegion + ', ' : ''}${userCountry}`;
+        document.getElementById('isp-val').innerText = userISP;
+
+        // Mise à jour du tableau de log
+        const tbody = document.getElementById('logs-tbody');
+        tbody.innerHTML = `
+          <tr>
+            <td class="tag-user">${fullUserID}</td>
+            <td>${userIP}</td>
+            <td>${userCity}</td>
+            <td>${userCountry}</td>
+            <td><span style="color: var(--accent-green); font-weight:700;">● Connecté</span></td>
+          </tr>
+        `;
+
+      } catch (error) {
+        console.error("Erreur lors du scan IP :", error);
+        document.getElementById('ip-val').innerText = "Erreur de scan";
+      }
+    }
+
+    // Lancement du scan au chargement
+    window.addEventListener('DOMContentLoaded', scanUserIP);
+  </script>
+
+</body>
+</html>

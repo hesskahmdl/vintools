@@ -515,7 +515,7 @@
     </div>
 
     <div class="feed-grid" id="feed">
-      <div style="color: #64748b; grid-column: 1/-1;">Chargement des annonces...</div>
+      <div style="color: #64748b; grid-column: 1/-1;">Initialisation du moniteur en direct...</div>
     </div>
   </div>
 
@@ -532,8 +532,9 @@
     let currentTab = 'feed';
     let localFavs = [];
     let isPaused = false;
+    let hasLoadedInitialFeed = false;
+    let isFetchingFeed = false;
 
-    // Gestion du Session ID unique stocké localement
     function getSessionId() {
       let sid = localStorage.getItem('sk_user_session_id');
       if (!sid) {
@@ -583,7 +584,8 @@
       const val = document.getElementById('quick-search-input').value.trim();
       if (!val) return;
       
-      document.getElementById('feed').innerHTML = '<div style="color: var(--accent-green); grid-column: 1/-1;">Recherche en cours pour "' + val + '"...</div>';
+      hasLoadedInitialFeed = false;
+      document.getElementById('feed').innerHTML = '<div style="color: var(--accent-green); grid-column: 1/-1;">Recherche ultra-rapide en cours pour "' + val + '"...</div>';
 
       try {
         await apiFetch('/api/config', {
@@ -593,7 +595,7 @@
         });
         if (isPaused) togglePause();
         switchTab('feed');
-        setTimeout(fetchItems, 600);
+        fetchItems();
       } catch (e) {
         console.error("Erreur recherche rapide :", e);
       }
@@ -669,13 +671,14 @@
     }
 
     async function fetchItems() {
-      if (currentTab !== 'feed' || isPaused) return;
+      if (currentTab !== 'feed' || isPaused || isFetchingFeed) return;
+      isFetchingFeed = true;
       try {
         const response = await apiFetch('/api/feed');
         if (!response.ok) return;
         
         const data = await response.json();
-        document.getElementById('items-count').innerText = data.displayed_count;
+        document.getElementById('items-count').innerText = data.displayed_count || 0;
         
         if (data.stats) {
           document.getElementById('stat-avg').innerText = `${data.stats.avg_price} €`;
@@ -683,9 +686,17 @@
           document.getElementById('stat-max').innerText = `${data.stats.max_price} €`;
         }
 
-        renderItems(data.items);
+        // On ne remplace que s'il y a des articles ou si c'est la toute première recherche
+        if (data.items && data.items.length > 0) {
+          hasLoadedInitialFeed = true;
+          renderItems(data.items);
+        } else if (!hasLoadedInitialFeed) {
+          document.getElementById('feed').innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Recherche d\'articles en cours sur Vinted...</div>';
+        }
       } catch (error) {
         console.error("Erreur flux :", error);
+      } finally {
+        isFetchingFeed = false;
       }
     }
 
@@ -699,8 +710,8 @@
         const favData = await favRes.json();
         const recData = await recRes.json();
         
-        localFavs = favData.favorites.map(f => f.id);
-        const combined = [...favData.favorites, ...recData.items].slice(0, 40);
+        localFavs = (favData.favorites || []).map(f => f.id);
+        const combined = [...(favData.favorites || []), ...(recData.items || [])].slice(0, 40);
         
         document.getElementById('items-count').innerText = combined.length;
         renderItems(combined);
@@ -753,7 +764,9 @@
     function renderItems(items) {
       const feedContainer = document.getElementById('feed');
       if (!items || items.length === 0) {
-        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé...</div>';
+        if (!hasLoadedInitialFeed) {
+          feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé pour le moment...</div>';
+        }
         return;
       }
 
@@ -846,6 +859,7 @@
       const btn = document.getElementById('btn-save-multi');
       btn.innerText = "Application...";
       btn.disabled = true;
+      hasLoadedInitialFeed = false;
 
       try {
         await apiFetch('/api/config', {

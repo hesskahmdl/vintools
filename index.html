@@ -380,7 +380,6 @@
 </head>
 <body>
 
-  <!-- Sidebar Desktop -->
   <div class="sidebar">
     <div class="brand-container">
       <div class="brand"><span>SK</span> tools</div>
@@ -396,19 +395,16 @@
     </div>
   </div>
 
-  <!-- Main Content -->
   <div class="main-content">
     <div class="header">
       <h2 id="page-title">Fil d'actualité en direct</h2>
 
       <div class="header-controls">
-        <!-- Recherche rapide unique -->
         <div class="single-search-box">
           <input type="text" id="quick-search-input" placeholder="Recherche rapide...">
           <button onclick="applyQuickSearch()">OK</button>
         </div>
 
-        <!-- Bouton de Pause du Flux (Côté Client) -->
         <button id="btn-toggle-pause" class="btn-pause" onclick="togglePause()">
           <span>⏸️</span> <span id="pause-txt">Pause</span>
         </button>
@@ -420,7 +416,6 @@
       </div>
     </div>
 
-    <!-- Stats Bar -->
     <div class="stats-bar" id="stats-bar">
       <div class="stat-box">
         <span class="title">Prix Moyen</span>
@@ -436,14 +431,13 @@
       </div>
     </div>
 
-    <!-- Multi-Recherche Container -->
     <div class="multi-search-container" id="multi-search-panel" style="display: none;">
       <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Recherches Multiples & Filtres :</h3>
       
       <div class="slot-row"><span class="slot-label">Slot 1:</span><input type="text" id="slot-0" class="filter-input" placeholder="Ex: nike running"></div>
       <div class="slot-row"><span class="slot-label">Slot 2:</span><input type="text" id="slot-1" class="filter-input" placeholder="Ex: nike division"></div>
       <div class="slot-row"><span class="slot-label">Slot 3:</span><input type="text" id="slot-2" class="filter-input" placeholder="Ex: adidas campus"></div>
-      <div class="slot-row"><span class="slot-label">Slot 3:</span><input type="text" id="slot-3" class="filter-input" placeholder="Ex: dunk low"></div>
+      <div class="slot-row"><span class="slot-label">Slot 4:</span><input type="text" id="slot-3" class="filter-input" placeholder="Ex: dunk low"></div>
       <div class="slot-row"><span class="slot-label">Slot 5:</span><input type="text" id="slot-4" class="filter-input" placeholder="Ex: carhartt jacket"></div>
       
       <div class="slot-row" style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px;">
@@ -459,7 +453,6 @@
     </div>
   </div>
 
-  <!-- Bottom Nav Mobile -->
   <div class="mobile-nav">
     <button onclick="switchTab('feed')" id="mob-tab-feed" class="mobile-nav-btn active">⚡ Flux</button>
     <button onclick="switchTab('search')" id="mob-tab-search" class="mobile-nav-btn">🔍 Rech.</button>
@@ -472,6 +465,13 @@
     let currentTab = 'feed';
     let localFavs = [];
     let isPaused = false;
+
+    // Déclenchement de la recherche rapide avec 'Entrée'
+    document.getElementById('quick-search-input').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        applyQuickSearch();
+      }
+    });
 
     function togglePause() {
       isPaused = !isPaused;
@@ -490,7 +490,7 @@
         dot.classList.remove('paused');
         txt.innerText = 'Pause';
         statusTxt.innerText = 'Scraper : Actif';
-        fetchItems(); // Reprend immédiatement la mise à jour
+        fetchItems();
       }
     }
 
@@ -498,14 +498,17 @@
       const val = document.getElementById('quick-search-input').value.trim();
       if (!val) return;
       
+      document.getElementById('feed').innerHTML = '<div style="color: var(--accent-green); grid-column: 1/-1;">Recherche en cours pour "' + val + '"...</div>';
+
       try {
         await fetch(`${API_URL}/api/config`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
           body: JSON.stringify({ single_keyword: val })
         });
-        if (isPaused) togglePause(); // Dépose la pause si activée
+        if (isPaused) togglePause();
         switchTab('feed');
+        setTimeout(fetchItems, 600);
       } catch (e) {
         console.error("Erreur recherche rapide :", e);
       }

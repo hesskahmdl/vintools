@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>V-Tools Live Monitor</title>
   <style>
     :root {
@@ -21,11 +21,12 @@
       background-color: var(--bg-dark);
       color: var(--text-main);
       display: flex;
+      flex-direction: row;
       height: 100vh;
       overflow: hidden;
     }
 
-    /* Sidebar */
+    /* Sidebar Desktop */
     .sidebar {
       width: 240px;
       background-color: #05070a;
@@ -34,6 +35,7 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+      flex-shrink: 0;
     }
 
     .brand { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
@@ -46,7 +48,6 @@
       padding: 10px 12px;
       border-radius: 6px;
       color: #94a3b8;
-      text-decoration: none;
       font-size: 0.85rem;
       display: flex;
       align-items: center;
@@ -63,14 +64,50 @@
       color: var(--accent-green);
     }
 
+    /* Barre de Navigation Mobile */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #05070a;
+      border-top: 1px solid var(--border-color);
+      z-index: 1000;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .mobile-nav-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .mobile-nav-btn.active { color: var(--accent-green); }
+
     /* Main Container */
-    .main-content { flex: 1; padding: 25px; overflow-y: auto; }
+    .main-content { 
+      flex: 1; 
+      padding: 20px; 
+      overflow-y: auto; 
+      padding-bottom: 80px; /* Espace pour la navbar mobile */
+    }
 
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .status-pill {
@@ -92,16 +129,29 @@
       box-shadow: 0 0 10px var(--accent-green);
     }
 
-    /* Panel de Filtres / Multi-Recherche */
-    .filter-box {
+    /* Multi-Recherche Panel (5 slots) */
+    .multi-search-container {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 15px;
+      padding: 16px;
       margin-bottom: 25px;
       display: flex;
+      flex-direction: column;
       gap: 12px;
+    }
+
+    .slot-row {
+      display: flex;
       align-items: center;
+      gap: 10px;
+    }
+
+    .slot-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      width: 60px;
     }
 
     .filter-input {
@@ -112,13 +162,13 @@
       border-radius: 6px;
       font-size: 0.9rem;
       outline: none;
-      flex: 1;
+      width: 100%;
     }
 
     .filter-input:focus { border-color: var(--accent-green); }
 
     .btn-apply {
-      padding: 10px 20px;
+      padding: 12px;
       background-color: var(--accent-green);
       border: none;
       border-radius: 6px;
@@ -126,15 +176,23 @@
       font-weight: 700;
       cursor: pointer;
       transition: background 0.2s;
+      margin-top: 5px;
     }
 
     .btn-apply:hover { background-color: var(--accent-green-hover); }
 
-    /* Grid des cartes */
+    /* Grid Responsive */
     .feed-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 12px;
+    }
+
+    @media (min-width: 768px) {
+      .feed-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+      }
     }
 
     /* Structure Carte */
@@ -142,22 +200,22 @@
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       position: relative;
     }
 
     .fav-btn {
       position: absolute;
-      top: 18px;
-      right: 18px;
+      top: 14px;
+      right: 14px;
       background: rgba(0,0,0,0.6);
       border: none;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       color: #fff;
       font-size: 1.1rem;
       cursor: pointer;
@@ -171,7 +229,7 @@
     .card-img-container {
       position: relative;
       width: 100%;
-      height: 190px;
+      height: 160px;
       border-radius: 6px;
       overflow: hidden;
       background-color: #1e293b;
@@ -182,35 +240,35 @@
     .card-details { display: flex; flex-direction: column; gap: 4px; }
     
     .brand-size { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-    .card-title { font-size: 0.85rem; font-weight: 600; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-title { font-size: 0.8rem; font-weight: 600; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     .seller-info { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 0.75rem; color: #94a3b8; }
-    .seller-avatar { width: 14px; height: 14px; border-radius: 50%; background-color: var(--accent-green); }
+    .seller-avatar { width: 12px; height: 12px; border-radius: 50%; background-color: var(--accent-green); }
 
     .condition-badge {
       display: inline-block;
       background-color: #1e293b;
       color: #94a3b8;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       padding: 2px 6px;
       border-radius: 4px;
       width: fit-content;
     }
 
-    .price-container { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
-    .price-main { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .price-container { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
+    .price-main { font-size: 1rem; font-weight: 700; color: #fff; }
 
-    .time-tag { font-size: 0.7rem; color: #64748b; }
+    .time-tag { font-size: 0.7rem; color: var(--accent-green); font-weight: 600; }
 
     .btn-buy {
       width: 100%;
-      padding: 9px;
+      padding: 8px;
       background-color: var(--accent-green);
       border: none;
       border-radius: 6px;
       color: #000;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       cursor: pointer;
       text-decoration: none;
       text-align: center;
@@ -219,49 +277,76 @@
     }
 
     .btn-buy:hover { background-color: var(--accent-green-hover); }
-    
-    .stats-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { display: none; }
+      .mobile-nav { display: flex; }
+      .main-content { padding: 15px; }
+      .header h2 { font-size: 1.2rem; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Sidebar Desktop -->
   <div class="sidebar">
     <div class="brand"><span>v</span>tools</div>
     
     <div class="menu-group">
-      <div class="menu-title">Vinted</div>
+      <div class="menu-title">Vinted Monitor</div>
       <button onclick="switchTab('feed')" id="tab-feed" class="menu-item active">Fil d'actualité</button>
-      <button onclick="switchTab('favs')" id="tab-favs" class="menu-item">Favoris & Recommandations</button>
+      <button onclick="switchTab('search')" id="tab-search" class="menu-item">Multi-Recherche (5 Slots)</button>
+      <button onclick="switchTab('favs')" id="tab-favs" class="menu-item">Favoris</button>
       <button onclick="switchTab('stats')" id="tab-stats" class="menu-item">Statistiques</button>
     </div>
   </div>
 
+  <!-- Main Content -->
   <div class="main-content">
     <div class="header">
-      <h2 id="page-title">Fil d'actualité</h2>
+      <h2 id="page-title">Fil d'actualité en direct</h2>
       <div class="status-pill">
         <div class="status-dot"></div>
-        Scraper : Actif (<span id="items-count">0</span> affichés)
+        Scraper : Actif (<span id="items-count">0</span> articles)
       </div>
     </div>
 
-    <!-- Multi-Recherche -->
-    <div class="filter-box" id="filter-box-container">
-      <input type="text" id="search-keyword" class="filter-input" placeholder="Multi-recherche séparée par virgules (ex: nike running, adidas campus, stussy)" value="nike running">
-      <button onclick="updateConfig()" class="btn-apply">Lancer la recherche</button>
+    <!-- Onglet Multi-Recherche (5 Cases) -->
+    <div class="multi-search-container" id="multi-search-panel" style="display: none;">
+      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Définir 5 recherches en parallèle :</h3>
+      <div class="slot-row"><span class="slot-label">Slot 1:</span><input type="text" id="slot-0" class="filter-input" placeholder="Ex: Nike running"></div>
+      <div class="slot-row"><span class="slot-label">Slot 2:</span><input type="text" id="slot-1" class="filter-input" placeholder="Ex: Adidas campus"></div>
+      <div class="slot-row"><span class="slot-label">Slot 3:</span><input type="text" id="slot-2" class="filter-input" placeholder="Ex: Stussy hoodie"></div>
+      <div class="slot-row"><span class="slot-label">Slot 4:</span><input type="text" id="slot-3" class="filter-input" placeholder="Ex: Dunk low"></div>
+      <div class="slot-row"><span class="slot-label">Slot 5:</span><input type="text" id="slot-4" class="filter-input" placeholder="Ex: Carhartt jacket"></div>
+      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les 5 recherches</button>
     </div>
 
     <div class="feed-grid" id="feed">
-      <div style="color: #64748b; grid-column: 1/-1;">Chargement des articles...</div>
+      <div style="color: #64748b; grid-column: 1/-1;">Chargement des annonces...</div>
     </div>
+  </div>
+
+  <!-- Bottom Navigation Mobile -->
+  <div class="mobile-nav">
+    <button onclick="switchTab('feed')" id="mob-tab-feed" class="mobile-nav-btn active">
+      <span>⚡</span>
+      <span>Flux</span>
+    </button>
+    <button onclick="switchTab('search')" id="mob-tab-search" class="mobile-nav-btn">
+      <span>🔍</span>
+      <span>Recherches</span>
+    </button>
+    <button onclick="switchTab('favs')" id="mob-tab-favs" class="mobile-nav-btn">
+      <span>♥</span>
+      <span>Favoris</span>
+    </button>
+    <button onclick="switchTab('stats')" id="mob-tab-stats" class="mobile-nav-btn">
+      <span>📊</span>
+      <span>Stats</span>
+    </button>
   </div>
 
   <script>
@@ -269,25 +354,52 @@
     let currentTab = 'feed';
     let localFavs = [];
 
+    async function loadCurrentConfig() {
+      try {
+        const res = await fetch(`${API_URL}/api/config`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+        const data = await res.json();
+        if (data.keywords && Array.isArray(data.keywords)) {
+          data.keywords.forEach((kw, index) => {
+            const el = document.getElementById(`slot-${index}`);
+            if (el) el.value = kw;
+          });
+        }
+      } catch (e) { console.error(e); }
+    }
+
     function switchTab(tab) {
       currentTab = tab;
-      document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-      document.getElementById(`tab-${tab}`).classList.add('active');
+      
+      document.querySelectorAll('.menu-item, .mobile-nav-btn').forEach(el => el.classList.remove('active'));
+      
+      const deskTab = document.getElementById(`tab-${tab}`);
+      if (deskTab) deskTab.classList.add('active');
+      const mobTab = document.getElementById(`mob-tab-${tab}`);
+      if (mobTab) mobTab.classList.add('active');
 
-      const filterBox = document.getElementById('filter-box-container');
+      const searchPanel = document.getElementById('multi-search-panel');
+      const feedContainer = document.getElementById('feed');
       const pageTitle = document.getElementById('page-title');
 
       if (tab === 'feed') {
         pageTitle.innerText = "Fil d'actualité en direct";
-        filterBox.style.display = 'flex';
+        searchPanel.style.display = 'none';
+        feedContainer.style.display = 'grid';
         fetchItems();
+      } else if (tab === 'search') {
+        pageTitle.innerText = "Multi-Recherche (5 Slots)";
+        searchPanel.style.display = 'flex';
+        feedContainer.style.display = 'none';
+        loadCurrentConfig();
       } else if (tab === 'favs') {
         pageTitle.innerText = "Mes Favoris & Recommandations";
-        filterBox.style.display = 'none';
+        searchPanel.style.display = 'none';
+        feedContainer.style.display = 'grid';
         fetchFavoritesAndRecs();
       } else if (tab === 'stats') {
-        pageTitle.innerText = "Statistiques de Scraping";
-        filterBox.style.display = 'none';
+        pageTitle.innerText = "Statistiques";
+        searchPanel.style.display = 'none';
+        feedContainer.style.display = 'grid';
         fetchStats();
       }
     }
@@ -304,7 +416,7 @@
         document.getElementById('items-count').innerText = data.count;
         renderItems(data.items);
       } catch (error) {
-        console.error("Erreur flux:", error);
+        console.error("Erreur flux :", error);
       }
     }
 
@@ -322,9 +434,9 @@
         const combined = [...favData.favorites, ...recData.items];
         
         document.getElementById('items-count').innerText = combined.length;
-        renderItems(combined, true);
+        renderItems(combined);
       } catch (e) {
-        console.error("Erreur favoris:", e);
+        console.error("Erreur favoris :", e);
       }
     }
 
@@ -337,22 +449,21 @@
         
         const feedContainer = document.getElementById('feed');
         feedContainer.innerHTML = `
-          <div class="stats-card" style="grid-column: 1/-1;">
-            <h3>Dernière vérification : ${data.last_check || 'En cours'}</h3>
-            <p><strong>Mots-clés surveillés :</strong> ${data.active_keywords.join(', ')}</p>
-            <p><strong>Articles actuellement en mémoire :</strong> ${data.current_feed_items}</p>
-            <p><strong>Total Favoris sauvegardés :</strong> ${data.total_favorites}</p>
+          <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; grid-column: 1/-1;">
+            <h3 style="margin-bottom: 10px; color: var(--accent-green);">Statistiques du Scraper</h3>
+            <p style="margin-bottom: 8px;"><strong>Dernière mise à jour :</strong> ${data.last_check || 'En cours'}</p>
+            <p style="margin-bottom: 8px;"><strong>Recherches actives :</strong> ${data.active_keywords.join(', ') || 'Aucune'}</p>
+            <p style="margin-bottom: 8px;"><strong>Articles affichés dans le flux :</strong> ${data.current_feed_items}</p>
+            <p><strong>Favoris enregistrés :</strong> ${data.total_favorites}</p>
           </div>
         `;
-      } catch (e) {
-        console.error("Erreur stats:", e);
-      }
+      } catch (e) { console.error(e); }
     }
 
-    function renderItems(items, isFavView = false) {
+    function renderItems(items) {
       const feedContainer = document.getElementById('feed');
       if (!items || items.length === 0) {
-        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé pour le moment...</div>';
+        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé...</div>';
         return;
       }
 
@@ -398,10 +509,7 @@
       try {
         await fetch(url, {
           method: method,
-          headers: { 
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true' 
-          },
+          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
           body: isFav ? null : JSON.stringify(item)
         });
 
@@ -416,31 +524,30 @@
         } else {
           fetchItems();
         }
-      } catch (e) {
-        console.error("Erreur modification favori:", e);
-      }
+      } catch (e) { console.error(e); }
     }
 
-    async function updateConfig() {
-      const keyword = document.getElementById('search-keyword').value;
+    async function saveMultiConfig() {
+      const keywords = [
+        document.getElementById('slot-0').value,
+        document.getElementById('slot-1').value,
+        document.getElementById('slot-2').value,
+        document.getElementById('slot-3').value,
+        document.getElementById('slot-4').value,
+      ];
 
       try {
         await fetch(`${API_URL}/api/config`, {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          },
-          body: JSON.stringify({ keyword: keyword })
+          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+          body: JSON.stringify({ keywords: keywords })
         });
+        switchTab('feed');
       } catch (e) {
         console.error("Erreur mise à jour config :", e);
       }
-
-      fetchItems();
     }
 
-    // Exécution automatique toutes les 1.5s
     fetchItems();
     setInterval(() => {
       if (currentTab === 'feed') fetchItems();

@@ -218,7 +218,6 @@
       </div>
     </div>
 
-    <!-- Filtres Dynamiques -->
     <div class="filter-box">
       <input type="text" id="search-keyword" class="filter-input" placeholder="Mot-clé (ex: Nike, Adidas)" value="nike" style="flex: 2;">
       <input type="number" id="max-price" class="filter-input" placeholder="Prix Max (€)" value="30" style="flex: 1;">
@@ -226,14 +225,16 @@
     </div>
 
     <div class="feed-grid" id="feed">
-      <!-- Les annonces s'affichent ici -->
-    </div>
+      </div>
   </div>
 
   <script>
+    // Ton URL Ngrok sécurisée
+    const API_URL = 'https://synonymously-additional-jaxon.ngrok-free.dev';
+
     async function fetchItems() {
       try {
-        const response = await fetch('http://localhost:5000/api/feed');
+        const response = await fetch(`${API_URL}/api/feed`);
         const data = await response.json();
         
         document.getElementById('items-count').innerText = data.count;
@@ -284,13 +285,12 @@
       const keyword = document.getElementById('search-keyword').value;
       const maxPrice = document.getElementById('max-price').value;
 
-      await fetch('http://localhost:5000/api/config', {
+      await fetch(`${API_URL}/api/config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ keyword: keyword, max_price: maxPrice })
       });
 
-      // Vider l'affichage immédiatement avant la mise à jour
       document.getElementById('feed').innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Mise à jour des filtres...</div>';
       fetchItems();
     }

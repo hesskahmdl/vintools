@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SK Tools - Fast Edition</title>
+  <title>SK Tools</title>
   <style>
     :root {
       --bg-dark: #080a0d;
       --card-bg: #0f131a;
       --accent-green: #00ffa3;
       --accent-green-hover: #00cc82;
-      --accent-sale: #ff4757;
       --text-main: #ffffff;
       --text-muted: #64748b;
       --border-color: #1a202c;
@@ -111,12 +110,6 @@
       gap: 10px;
     }
 
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
     .status-pill {
       background-color: #0f172a;
       border: 1px solid #1e293b;
@@ -134,22 +127,6 @@
       background-color: var(--accent-green);
       border-radius: 50%;
       box-shadow: 0 0 10px var(--accent-green);
-    }
-
-    .btn-freeze {
-      background-color: #1e293b;
-      border: 1px solid var(--border-color);
-      color: #fff;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .btn-freeze.active {
-      background-color: #ff4757;
-      border-color: #ff4757;
-      box-shadow: 0 0 10px rgba(255, 71, 87, 0.4);
     }
 
     /* Stats Bar (Prix Moyen, Min, Max) */
@@ -173,8 +150,8 @@
     .stat-box .title { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
     .stat-box .val { font-size: 1.1rem; font-weight: 800; color: var(--accent-green); }
 
-    /* Search Containers */
-    .search-panel {
+    /* Multi-Search Container */
+    .multi-search-container {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 10px;
@@ -195,11 +172,10 @@
       font-size: 0.8rem;
       font-weight: 700;
       color: var(--accent-green);
-      width: 110px;
-      flex-shrink: 0;
+      width: 80px;
     }
 
-    .filter-input, .filter-select {
+    .filter-input {
       background-color: #05070a;
       border: 1px solid var(--border-color);
       color: #fff;
@@ -210,7 +186,7 @@
       width: 100%;
     }
 
-    .filter-input:focus, .filter-select:focus { border-color: var(--accent-green); }
+    .filter-input:focus { border-color: var(--accent-green); }
 
     .btn-apply {
       padding: 12px;
@@ -240,7 +216,7 @@
       }
     }
 
-    /* Structure Carte avec animation d'apparition ultra-rapide */
+    /* Structure Carte */
     .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -250,17 +226,6 @@
       flex-direction: column;
       gap: 8px;
       position: relative;
-      transition: border-color 0.2s;
-      animation: fadeInFast 0.15s ease-out;
-    }
-
-    @keyframes fadeInFast {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .card:hover {
-      border-color: var(--accent-green);
     }
 
     .fav-btn {
@@ -281,26 +246,6 @@
       z-index: 2;
     }
     .fav-btn.active { color: #ff4757; }
-
-    /* Badge SALE Feu 🔥 */
-    .sale-badge {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      background: linear-gradient(135deg, #ff4757, #ff6b81);
-      color: #fff;
-      font-size: 0.65rem;
-      font-weight: 800;
-      padding: 4px 8px;
-      border-radius: 20px;
-      z-index: 2;
-      box-shadow: 0 0 10px rgba(255, 71, 87, 0.6);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
 
     .card-img-container {
       position: relative;
@@ -328,18 +273,12 @@
       width: fit-content;
     }
 
-    .price-container { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; margin-top: 2px; }
+    .price-container { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
     .price-main { font-size: 1rem; font-weight: 700; color: #fff; }
-    .profit-tag { font-size: 0.7rem; color: var(--accent-green); font-weight: 700; }
-    .time-tag { font-size: 0.7rem; color: #64748b; font-weight: 600; }
-
-    .card-buttons {
-      display: flex;
-      gap: 6px;
-    }
+    .time-tag { font-size: 0.7rem; color: var(--accent-green); font-weight: 600; }
 
     .btn-buy {
-      flex: 1;
+      width: 100%;
       padding: 8px;
       background-color: var(--accent-green);
       border: none;
@@ -351,23 +290,10 @@
       text-decoration: none;
       text-align: center;
       transition: background-color 0.2s;
+      display: block;
     }
 
     .btn-buy:hover { background-color: var(--accent-green-hover); }
-
-    .btn-autobuy {
-      flex: 1;
-      padding: 8px;
-      background-color: #3b82f6;
-      border: none;
-      border-radius: 6px;
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.8rem;
-      cursor: pointer;
-      text-decoration: none;
-      text-align: center;
-    }
 
     @media (max-width: 768px) {
       body { flex-direction: column; }
@@ -386,9 +312,8 @@
     
     <div class="menu-group">
       <div class="menu-title">Vinted Monitor</div>
-      <button onclick="switchTab('feed')" id="tab-feed" class="menu-item active">Fil Direct (Live)</button>
-      <button onclick="switchTab('solo')" id="tab-solo" class="menu-item">Recherche Solo</button>
-      <button onclick="switchTab('search')" id="tab-search" class="menu-item">Multi-Recherche</button>
+      <button onclick="switchTab('feed')" id="tab-feed" class="menu-item active">Fil (Max 40)</button>
+      <button onclick="switchTab('search')" id="tab-search" class="menu-item">Multi-Recherche & Prix</button>
       <button onclick="switchTab('favs')" id="tab-favs" class="menu-item">Favoris</button>
       <button onclick="switchTab('stats')" id="tab-stats" class="menu-item">Statistiques</button>
     </div>
@@ -398,12 +323,9 @@
   <div class="main-content">
     <div class="header">
       <h2 id="page-title">Fil d'actualité en direct</h2>
-      <div class="header-actions">
-        <button id="freeze-btn" class="btn-freeze" onclick="toggleFreeze()">⏸ Freeze Flux</button>
-        <div class="status-pill">
-          <div class="status-dot"></div>
-          <span id="items-count">0</span>/40 affichés
-        </div>
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        Scraper : Actif (<span id="items-count">0</span>/40 affichés)
       </div>
     </div>
 
@@ -423,31 +345,9 @@
       </div>
     </div>
 
-    <!-- Panneau Recherche Solo -->
-    <div class="search-panel" id="solo-search-panel" style="display: none;">
-      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Recherche Solo Rapide :</h3>
-      
-      <div class="slot-row">
-        <span class="slot-label">Recherche :</span>
-        <input type="text" id="solo-query-input" class="filter-input" placeholder="Ex: Nike Tech Fleece">
-      </div>
-      
-      <div class="slot-row">
-        <span class="slot-label" style="color: #ff4757;">Prix Max (€) :</span>
-        <input type="number" id="solo-max-price" class="filter-input" placeholder="Ex: 100">
-      </div>
-
-      <div class="slot-row">
-        <span class="slot-label" style="color: #e2e8f0;">Blacklist Mots :</span>
-        <input type="text" id="solo-blacklist" class="filter-input" placeholder="Ex: fake, boite, pas vrai (Optionnel)">
-      </div>
-
-      <button onclick="applySoloSearch()" class="btn-apply">Lancer la recherche Solo</button>
-    </div>
-
-    <!-- Panneau Multi-Recherche + Filtres V-Tools -->
-    <div class="search-panel" id="multi-search-panel" style="display: none;">
-      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Multi-Recherche & Filtres Avancés :</h3>
+    <!-- Multi-Recherche + Prix Max -->
+    <div class="multi-search-container" id="multi-search-panel" style="display: none;">
+      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Recherches & Filtres :</h3>
       
       <div class="slot-row"><span class="slot-label">Slot 1:</span><input type="text" id="slot-0" class="filter-input" placeholder="Ex: nike running"></div>
       <div class="slot-row"><span class="slot-label">Slot 2:</span><input type="text" id="slot-1" class="filter-input" placeholder="Ex: nike division"></div>
@@ -457,42 +357,14 @@
       
       <div class="slot-row" style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px;">
         <span class="slot-label" style="color: #ff4757;">Prix Max (€):</span>
-        <input type="number" id="max-price-input" class="filter-input" placeholder="Ex: 100">
+        <input type="number" id="max-price-input" class="filter-input" placeholder="Ex: 40 (Laissez vide pour désactiver)">
       </div>
 
-      <div class="slot-row">
-        <span class="slot-label">Mots Exclus :</span>
-        <input type="text" id="multi-blacklist" class="filter-input" placeholder="Ex: fake, trou, abimé (Séparer par une virgule)">
-      </div>
-
-      <div class="slot-row">
-        <span class="slot-label">Taille :</span>
-        <input type="text" id="filter-size" class="filter-input" placeholder="Ex: M, L, 42 (Toutes si vide)">
-      </div>
-
-      <div class="slot-row">
-        <span class="slot-label">État Min :</span>
-        <select id="filter-condition" class="filter-select">
-          <option value="">Tous les états</option>
-          <option value="neuf">Neuf uniquement</option>
-          <option value="tres_bon">Très bon état & +</option>
-        </select>
-      </div>
-
-      <div class="slot-row">
-        <span class="slot-label">Alerte Son :</span>
-        <select id="filter-sound" class="filter-select">
-          <option value="off">Désactivé</option>
-          <option value="on">Activé 🔥 (Bip sur les affaires)</option>
-        </select>
-      </div>
-
-      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer la Multi-Recherche</button>
+      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les recherches & le filtre</button>
     </div>
 
-    <!-- Zone du Fil d'Actualité -->
-    <div class="feed-grid" id="feed" onmouseenter="setHoverPause(true)" onmouseleave="setHoverPause(false)">
-      <div style="color: #64748b; grid-column: 1/-1;">Chargement du flux ultra-rapide...</div>
+    <div class="feed-grid" id="feed">
+      <div style="color: #64748b; grid-column: 1/-1;">Chargement des annonces...</div>
     </div>
   </div>
 
@@ -500,15 +372,11 @@
   <div class="mobile-nav">
     <button onclick="switchTab('feed')" id="mob-tab-feed" class="mobile-nav-btn active">
       <span>⚡</span>
-      <span>Live</span>
-    </button>
-    <button onclick="switchTab('solo')" id="mob-tab-solo" class="mobile-nav-btn">
-      <span>🔍</span>
-      <span>Solo</span>
+      <span>Flux</span>
     </button>
     <button onclick="switchTab('search')" id="mob-tab-search" class="mobile-nav-btn">
-      <span>⚙️</span>
-      <span>Multi</span>
+      <span>🔍</span>
+      <span>Recherches</span>
     </button>
     <button onclick="switchTab('favs')" id="mob-tab-favs" class="mobile-nav-btn">
       <span>♥</span>
@@ -524,52 +392,6 @@
     const API_URL = 'https://synonymously-additional-jaxon.ngrok-free.dev';
     let currentTab = 'feed';
     let localFavs = [];
-    let currentAvgPrice = 0;
-    
-    // Suivi direct pour éviter les rendus inutiles
-    let renderedIds = new Set();
-    let isFetching = false;
-
-    let userMaxPrice = null;
-    let userBlacklist = [];
-    let userSizeFilter = "";
-    let userConditionFilter = "";
-
-    let isFrozen = false;
-    let isHovered = false;
-
-    function playSaleSound() {
-      if (document.getElementById('filter-sound').value === 'off') return;
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, ctx.currentTime);
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.15);
-      } catch (e) {}
-    }
-
-    function toggleFreeze() {
-      isFrozen = !isFrozen;
-      const btn = document.getElementById('freeze-btn');
-      if (isFrozen) {
-        btn.classList.add('active');
-        btn.innerText = "▶ Reprendre Flux";
-      } else {
-        btn.classList.remove('active');
-        btn.innerText = "⏸ Freeze Flux";
-        fetchItems();
-      }
-    }
-
-    function setHoverPause(state) {
-      isHovered = state;
-    }
 
     async function loadCurrentConfig() {
       try {
@@ -580,9 +402,9 @@
             const el = document.getElementById(`slot-${index}`);
             if (el) el.value = kw;
           });
-          if(data.keywords[0] && !document.getElementById('solo-query-input').value) {
-            document.getElementById('solo-query-input').value = data.keywords[0];
-          }
+        }
+        if (data.max_price !== undefined && data.max_price !== null) {
+          document.getElementById('max-price-input').value = data.max_price;
         }
       } catch (e) { console.error(e); }
     }
@@ -597,51 +419,45 @@
       const mobTab = document.getElementById(`mob-tab-${tab}`);
       if (mobTab) mobTab.classList.add('active');
 
-      const soloPanel = document.getElementById('solo-search-panel');
-      const multiPanel = document.getElementById('multi-search-panel');
+      const searchPanel = document.getElementById('multi-search-panel');
       const feedContainer = document.getElementById('feed');
       const pageTitle = document.getElementById('page-title');
 
-      soloPanel.style.display = 'none';
-      multiPanel.style.display = 'none';
-      feedContainer.style.display = 'grid';
-
       if (tab === 'feed') {
-        pageTitle.innerText = "Fil d'actualité en direct (Live)";
-        renderedIds.clear();
-        feedContainer.innerHTML = '';
+        pageTitle.innerText = "Fil d'actualité en direct (Max 40)";
+        searchPanel.style.display = 'none';
+        feedContainer.style.display = 'grid';
         fetchItems();
-      } else if (tab === 'solo') {
-        pageTitle.innerText = "Recherche Solo";
-        soloPanel.style.display = 'flex';
-        loadCurrentConfig();
       } else if (tab === 'search') {
-        pageTitle.innerText = "Multi-Recherche & Filtres Avancés";
-        multiPanel.style.display = 'flex';
+        pageTitle.innerText = "Multi-Recherche & Filtre Prix";
+        searchPanel.style.display = 'flex';
+        feedContainer.style.display = 'none';
         loadCurrentConfig();
       } else if (tab === 'favs') {
         pageTitle.innerText = "Mes Favoris";
-        renderedIds.clear();
+        searchPanel.style.display = 'none';
+        feedContainer.style.display = 'grid';
         fetchFavoritesAndRecs();
       } else if (tab === 'stats') {
         pageTitle.innerText = "Statistiques Globale";
+        searchPanel.style.display = 'none';
+        feedContainer.style.display = 'grid';
         fetchStats();
       }
     }
 
     async function fetchItems() {
-      if (currentTab !== 'feed' || isFrozen || isHovered || isFetching) return;
-      isFetching = true;
+      if (currentTab !== 'feed') return;
       try {
         const response = await fetch(`${API_URL}/api/feed`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
-        if (!response.ok) { isFetching = false; return; }
+        if (!response.ok) return;
         
         const data = await response.json();
+        document.getElementById('items-count').innerText = data.displayed_count;
         
         if (data.stats) {
-          currentAvgPrice = parseFloat(data.stats.avg_price) || 0;
           document.getElementById('stat-avg').innerText = `${data.stats.avg_price} €`;
           document.getElementById('stat-min').innerText = `${data.stats.min_price} €`;
           document.getElementById('stat-max').innerText = `${data.stats.max_price} €`;
@@ -650,8 +466,6 @@
         renderItems(data.items);
       } catch (error) {
         console.error("Erreur flux :", error);
-      } finally {
-        isFetching = false;
       }
     }
 
@@ -666,11 +480,10 @@
         const recData = await recRes.json();
         
         localFavs = favData.favorites.map(f => f.id);
-        const combined = [...favData.favorites, ...(recData.items || [])].slice(0, 40);
+        const combined = [...favData.favorites, ...recData.items].slice(0, 40);
         
-        document.getElementById('feed').innerHTML = '';
-        renderedIds.clear();
-        renderItems(combined, true);
+        document.getElementById('items-count').innerText = combined.length;
+        renderItems(combined);
       } catch (e) {
         console.error("Erreur favoris :", e);
       }
@@ -686,123 +499,58 @@
         const feedContainer = document.getElementById('feed');
         feedContainer.innerHTML = `
           <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; grid-column: 1/-1;">
-            <h3 style="margin-bottom: 10px; color: var(--accent-green);">Statistiques SK Tools / V-Tools</h3>
-            <p style="margin-bottom: 8px;"><strong>Status :</strong> Monitoring Actif (Ultra-Fast)</p>
-            <p style="margin-bottom: 8px;"><strong>Filtre Prix Max Personnel :</strong> ${userMaxPrice ? userMaxPrice + ' €' : 'Aucun'}</p>
-            <p style="margin-bottom: 8px;"><strong>Mots Bannis :</strong> ${userBlacklist.length ? userBlacklist.join(', ') : 'Aucun'}</p>
+            <h3 style="margin-bottom: 10px; color: var(--accent-green);">Statistiques du Scraper</h3>
+            <p style="margin-bottom: 8px;"><strong>Dernière mise à jour :</strong> ${data.last_check || 'En cours'}</p>
+            <p style="margin-bottom: 8px;"><strong>Recherches actives :</strong> ${data.active_keywords.join(', ') || 'Aucune'}</p>
+            <p style="margin-bottom: 8px;"><strong>Filtre Prix Max :</strong> ${data.max_price_filter ? data.max_price_filter + ' €' : 'Aucun (Tous les prix)'}</p>
             <p style="margin-bottom: 8px;"><strong>Prix Moyen :</strong> ${data.avg_price} €</p>
-            <p style="margin-bottom: 8px;"><strong>Prix Min / Max :</strong> ${data.min_price} € / ${data.max_price} €</p>
-            <p><strong>Favoris :</strong> ${data.total_favorites}</p>
+            <p style="margin-bottom: 8px;"><strong>Prix le plus bas / haut :</strong> ${data.min_price} € / ${data.max_price} €</p>
+            <p style="margin-bottom: 8px;"><strong>Articles affichés dans le flux :</strong> ${data.displayed_items} (Max 40)</p>
+            <p><strong>Favoris enregistrés :</strong> ${data.total_favorites}</p>
           </div>
         `;
       } catch (e) { console.error(e); }
     }
 
-    function createCardElement(item) {
-      const isFav = localFavs.includes(item.id);
-      const itemPrice = parseFloat(item.price) || 0;
-      
-      const isSale = currentAvgPrice > 0 && itemPrice <= (currentAvgPrice * 0.85);
-      const estimatedResell = Math.round(itemPrice * 1.35);
-      const buyUrl = item.url;
-      const buyNowUrl = item.buy_url || (item.id ? `https://www.vinted.fr/checkout?purchase_id=&order_id=${item.id}&order_type=transaction` : '#');
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.dataset.id = item.id;
-
-      card.innerHTML = `
-        ${isSale ? '<div class="sale-badge">🔥 SALE</div>' : ''}
-        <button class="fav-btn ${isFav ? 'active' : ''}">♥</button>
-        <div class="card-img-container">
-          <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
-        </div>
-        <div class="card-details">
-          <div class="brand-size">${item.brand} • ${item.size}</div>
-          <div class="card-title">${item.title}</div>
-          
-          <div class="seller-info">
-            <div class="seller-avatar"></div>
-            <span>${item.seller}</span>
-          </div>
-
-          <div class="condition-badge">${item.condition}</div>
-
-          <div class="price-container">
-            <span class="price-main">${item.price} €</span>
-            <span class="profit-tag">Est: ~${estimatedResell}€</span>
-          </div>
-
-          <div class="time-tag">${item.time_ago}</div>
-        </div>
-        
-        <div class="card-buttons">
-          <a href="${buyUrl}" target="_blank" class="btn-buy">Voir</a>
-          <a href="${buyNowUrl}" target="_blank" class="btn-autobuy">⚡ 1-Click</a>
-        </div>
-      `;
-
-      card.querySelector('.fav-btn').onclick = (e) => {
-        e.stopPropagation();
-        toggleFav(item);
-      };
-
-      return { card, isSale };
-    }
-
-    function renderItems(rawItems, bypassFilters = false) {
+    function renderItems(items) {
       const feedContainer = document.getElementById('feed');
-      if (!rawItems || rawItems.length === 0) return;
-
-      let filteredItems = rawItems;
-      if (!bypassFilters) {
-        filteredItems = rawItems.filter(item => {
-          const price = parseFloat(item.price) || 0;
-          const titleLower = (item.title || "").toLowerCase();
-          
-          if (userMaxPrice !== null && price > userMaxPrice) return false;
-          if (userBlacklist.some(word => word && titleLower.includes(word.toLowerCase()))) return false;
-          if (userSizeFilter && item.size && !item.size.toLowerCase().includes(userSizeFilter.toLowerCase())) return false;
-
-          return true;
-        });
+      if (!items || items.length === 0) {
+        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé...</div>';
+        return;
       }
 
-      // Inserer uniquement les nouveautés en haut du flux sans tout détruire
-      let hasNewSale = false;
-      const fragment = document.createDocumentFragment();
+      let htmlContent = '';
+      items.forEach(item => {
+        const isFav = localFavs.includes(item.id);
+        htmlContent += `
+          <div class="card">
+            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${JSON.stringify(item).replace(/"/g, '&quot;')})">♥</button>
+            <div class="card-img-container">
+              <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
+            </div>
+            <div class="card-details">
+              <div class="brand-size">${item.brand} • ${item.size}</div>
+              <div class="card-title">${item.title}</div>
+              
+              <div class="seller-info">
+                <div class="seller-avatar"></div>
+                <span>${item.seller}</span>
+              </div>
 
-      // On traite dans l'ordre inverse pour que le plus récent se retrouve au tout début
-      const newItemsToInsert = filteredItems.filter(item => !renderedIds.has(item.id));
+              <div class="condition-badge">${item.condition}</div>
 
-      if (newItemsToInsert.length === 0) return;
+              <div class="price-container">
+                <span class="price-main">${item.price} €</span>
+              </div>
 
-      // Nettoyer le message d'attente s'il existe
-      if (feedContainer.firstElementChild && !feedContainer.firstElementChild.classList.contains('card')) {
-        feedContainer.innerHTML = '';
-      }
-
-      newItemsToInsert.reverse().forEach(item => {
-        renderedIds.add(item.id);
-        const { card, isSale } = createCardElement(item);
-        if (isSale) hasNewSale = true;
-        fragment.appendChild(card);
+              <div class="time-tag">${item.time_ago}</div>
+            </div>
+            <a href="${item.url}" target="_blank" class="btn-buy">Acheter</a>
+          </div>
+        `;
       });
 
-      feedContainer.insertBefore(fragment, feedContainer.firstChild);
-
-      // Limiter le nombre d'éléments dans la page HTML à 40 pour des performances optimales
-      while (feedContainer.children.length > 40) {
-        const lastChild = feedContainer.lastElementChild;
-        if (lastChild && lastChild.dataset && lastChild.dataset.id) {
-          renderedIds.delete(lastChild.dataset.id);
-        }
-        feedContainer.removeChild(lastChild);
-      }
-
-      document.getElementById('items-count').innerText = feedContainer.children.length;
-
-      if (hasNewSale) playSaleSound();
+      feedContainer.innerHTML = htmlContent;
     }
 
     async function toggleFav(item) {
@@ -825,33 +573,10 @@
 
         if (currentTab === 'favs') {
           fetchFavoritesAndRecs();
+        } else {
+          fetchItems();
         }
       } catch (e) { console.error(e); }
-    }
-
-    async function applySoloSearch() {
-      const query = document.getElementById('solo-query-input').value.trim();
-      const maxPrice = document.getElementById('solo-max-price').value;
-      const bl = document.getElementById('solo-blacklist').value;
-
-      userMaxPrice = maxPrice !== "" ? parseFloat(maxPrice) : null;
-      userBlacklist = bl ? bl.split(',').map(s => s.trim()) : [];
-
-      if (!query) return;
-
-      try {
-        await fetch(`${API_URL}/api/config`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
-          body: JSON.stringify({ 
-            keywords: [query],
-            max_price: userMaxPrice
-          })
-        });
-        switchTab('feed');
-      } catch (e) {
-        console.error("Erreur Recherche Solo :", e);
-      }
     }
 
     async function saveMultiConfig() {
@@ -863,11 +588,6 @@
         document.getElementById('slot-4').value,
       ];
       const maxPrice = document.getElementById('max-price-input').value;
-      const bl = document.getElementById('multi-blacklist').value;
-
-      userMaxPrice = maxPrice !== "" ? parseFloat(maxPrice) : null;
-      userBlacklist = bl ? bl.split(',').map(s => s.trim()) : [];
-      userSizeFilter = document.getElementById('filter-size').value.trim();
 
       try {
         await fetch(`${API_URL}/api/config`, {
@@ -875,7 +595,7 @@
           headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
           body: JSON.stringify({ 
             keywords: keywords,
-            max_price: userMaxPrice
+            max_price: maxPrice !== "" ? parseFloat(maxPrice) : null
           })
         });
         switchTab('feed');
@@ -884,13 +604,10 @@
       }
     }
 
-    // Premier appel direct au démarrage
     fetchItems();
-    
-    // Boucle à ultra-haute cadence (250 ms)
     setInterval(() => {
       if (currentTab === 'feed') fetchItems();
-    }, 250);
+    }, 1000); // Mise à jour instantanée toutes les 1 seconde
   </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SK Tools</title>
+  <title>SK Tools - BETA v1.01</title>
   <style>
     :root {
       --bg-dark: #080a0d;
@@ -13,6 +13,7 @@
       --text-main: #ffffff;
       --text-muted: #64748b;
       --border-color: #1a202c;
+      --pause-red: #ff4757;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -28,7 +29,7 @@
 
     /* Sidebar Desktop */
     .sidebar {
-      width: 240px;
+      width: 250px;
       background-color: #05070a;
       border-right: 1px solid var(--border-color);
       padding: 20px 15px;
@@ -38,8 +39,26 @@
       flex-shrink: 0;
     }
 
-    .brand { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
     .brand span { color: var(--accent-green); }
+
+    .beta-badge {
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background-color: rgba(0, 255, 163, 0.05);
+    }
 
     .menu-group { display: flex; flex-direction: column; gap: 4px; }
     .menu-title { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #475569; margin: 10px 0 5px 10px; }
@@ -110,6 +129,65 @@
       gap: 10px;
     }
 
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Barre de recherche unique */
+    .single-search-box {
+      display: flex;
+      align-items: center;
+      background-color: #0f131a;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+
+    .single-search-box input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      padding: 6px;
+      font-size: 0.85rem;
+      outline: none;
+      width: 140px;
+    }
+
+    .single-search-box button {
+      background: var(--accent-green);
+      border: none;
+      color: #000;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    /* Bouton Pause Flux */
+    .btn-pause {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--accent-green);
+      background-color: rgba(0, 255, 163, 0.1);
+      color: var(--accent-green);
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-pause.paused {
+      border-color: var(--pause-red);
+      background-color: rgba(255, 71, 87, 0.15);
+      color: var(--pause-red);
+    }
+
     .status-pill {
       background-color: #0f172a;
       border: 1px solid #1e293b;
@@ -129,7 +207,12 @@
       box-shadow: 0 0 10px var(--accent-green);
     }
 
-    /* Stats Bar (Prix Moyen, Min, Max) */
+    .status-dot.paused {
+      background-color: var(--pause-red);
+      box-shadow: 0 0 10px var(--pause-red);
+    }
+
+    /* Stats Bar */
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -162,18 +245,8 @@
       gap: 12px;
     }
 
-    .slot-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .slot-label {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--accent-green);
-      width: 80px;
-    }
+    .slot-row { display: flex; align-items: center; gap: 10px; }
+    .slot-label { font-size: 0.8rem; font-weight: 700; color: var(--accent-green); width: 80px; }
 
     .filter-input {
       background-color: #05070a;
@@ -216,7 +289,7 @@
       }
     }
 
-    /* Structure Carte */
+    /* Carte Article */
     .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -300,7 +373,8 @@
       .sidebar { display: none; }
       .mobile-nav { display: flex; }
       .main-content { padding: 15px; }
-      .header h2 { font-size: 1.2rem; }
+      .header h2 { font-size: 1.1rem; }
+      .single-search-box input { width: 90px; }
     }
   </style>
 </head>
@@ -308,7 +382,10 @@
 
   <!-- Sidebar Desktop -->
   <div class="sidebar">
-    <div class="brand"><span>SK</span> tools</div>
+    <div class="brand-container">
+      <div class="brand"><span>SK</span> tools</div>
+      <div class="beta-badge">BETA v1.01</div>
+    </div>
     
     <div class="menu-group">
       <div class="menu-title">Vinted Monitor</div>
@@ -323,13 +400,27 @@
   <div class="main-content">
     <div class="header">
       <h2 id="page-title">Fil d'actualité en direct</h2>
-      <div class="status-pill">
-        <div class="status-dot"></div>
-        Scraper : Actif (<span id="items-count">0</span>/40 affichés)
+
+      <div class="header-controls">
+        <!-- Recherche rapide unique -->
+        <div class="single-search-box">
+          <input type="text" id="quick-search-input" placeholder="Recherche rapide...">
+          <button onclick="applyQuickSearch()">OK</button>
+        </div>
+
+        <!-- Bouton de Pause du Flux (Côté Client) -->
+        <button id="btn-toggle-pause" class="btn-pause" onclick="togglePause()">
+          <span>⏸️</span> <span id="pause-txt">Pause</span>
+        </button>
+
+        <div class="status-pill">
+          <div class="status-dot" id="status-dot"></div>
+          <span id="status-text">Scraper : Actif</span> (<span id="items-count">0</span>/40)
+        </div>
       </div>
     </div>
 
-    <!-- Barre de Prix Moyen / Min / Max -->
+    <!-- Stats Bar -->
     <div class="stats-bar" id="stats-bar">
       <div class="stat-box">
         <span class="title">Prix Moyen</span>
@@ -345,22 +436,22 @@
       </div>
     </div>
 
-    <!-- Multi-Recherche + Prix Max -->
+    <!-- Multi-Recherche Container -->
     <div class="multi-search-container" id="multi-search-panel" style="display: none;">
-      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Recherches & Filtres :</h3>
+      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Recherches Multiples & Filtres :</h3>
       
       <div class="slot-row"><span class="slot-label">Slot 1:</span><input type="text" id="slot-0" class="filter-input" placeholder="Ex: nike running"></div>
       <div class="slot-row"><span class="slot-label">Slot 2:</span><input type="text" id="slot-1" class="filter-input" placeholder="Ex: nike division"></div>
       <div class="slot-row"><span class="slot-label">Slot 3:</span><input type="text" id="slot-2" class="filter-input" placeholder="Ex: adidas campus"></div>
-      <div class="slot-row"><span class="slot-label">Slot 4:</span><input type="text" id="slot-3" class="filter-input" placeholder="Ex: dunk low"></div>
+      <div class="slot-row"><span class="slot-label">Slot 3:</span><input type="text" id="slot-3" class="filter-input" placeholder="Ex: dunk low"></div>
       <div class="slot-row"><span class="slot-label">Slot 5:</span><input type="text" id="slot-4" class="filter-input" placeholder="Ex: carhartt jacket"></div>
       
       <div class="slot-row" style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px;">
         <span class="slot-label" style="color: #ff4757;">Prix Max (€):</span>
-        <input type="number" id="max-price-input" class="filter-input" placeholder="Ex: 40 (Laissez vide pour désactiver)">
+        <input type="number" id="max-price-input" class="filter-input" placeholder="Ex: 40">
       </div>
 
-      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les recherches & le filtre</button>
+      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les modifications</button>
     </div>
 
     <div class="feed-grid" id="feed">
@@ -370,28 +461,55 @@
 
   <!-- Bottom Nav Mobile -->
   <div class="mobile-nav">
-    <button onclick="switchTab('feed')" id="mob-tab-feed" class="mobile-nav-btn active">
-      <span>⚡</span>
-      <span>Flux</span>
-    </button>
-    <button onclick="switchTab('search')" id="mob-tab-search" class="mobile-nav-btn">
-      <span>🔍</span>
-      <span>Recherches</span>
-    </button>
-    <button onclick="switchTab('favs')" id="mob-tab-favs" class="mobile-nav-btn">
-      <span>♥</span>
-      <span>Favoris</span>
-    </button>
-    <button onclick="switchTab('stats')" id="mob-tab-stats" class="mobile-nav-btn">
-      <span>📊</span>
-      <span>Stats</span>
-    </button>
+    <button onclick="switchTab('feed')" id="mob-tab-feed" class="mobile-nav-btn active">⚡ Flux</button>
+    <button onclick="switchTab('search')" id="mob-tab-search" class="mobile-nav-btn">🔍 Rech.</button>
+    <button onclick="switchTab('favs')" id="mob-tab-favs" class="mobile-nav-btn">♥ Favs</button>
+    <button onclick="switchTab('stats')" id="mob-tab-stats" class="mobile-nav-btn">📊 Stats</button>
   </div>
 
   <script>
     const API_URL = 'https://synonymously-additional-jaxon.ngrok-free.dev';
     let currentTab = 'feed';
     let localFavs = [];
+    let isPaused = false;
+
+    function togglePause() {
+      isPaused = !isPaused;
+      const btn = document.getElementById('btn-toggle-pause');
+      const txt = document.getElementById('pause-txt');
+      const dot = document.getElementById('status-dot');
+      const statusTxt = document.getElementById('status-text');
+
+      if (isPaused) {
+        btn.classList.add('paused');
+        dot.classList.add('paused');
+        txt.innerText = 'Reprendre';
+        statusTxt.innerText = 'Scraper : En Pause';
+      } else {
+        btn.classList.remove('paused');
+        dot.classList.remove('paused');
+        txt.innerText = 'Pause';
+        statusTxt.innerText = 'Scraper : Actif';
+        fetchItems(); // Reprend immédiatement la mise à jour
+      }
+    }
+
+    async function applyQuickSearch() {
+      const val = document.getElementById('quick-search-input').value.trim();
+      if (!val) return;
+      
+      try {
+        await fetch(`${API_URL}/api/config`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+          body: JSON.stringify({ single_keyword: val })
+        });
+        if (isPaused) togglePause(); // Dépose la pause si activée
+        switchTab('feed');
+      } catch (e) {
+        console.error("Erreur recherche rapide :", e);
+      }
+    }
 
     async function loadCurrentConfig() {
       try {
@@ -447,7 +565,7 @@
     }
 
     async function fetchItems() {
-      if (currentTab !== 'feed') return;
+      if (currentTab !== 'feed' || isPaused) return;
       try {
         const response = await fetch(`${API_URL}/api/feed`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
@@ -502,11 +620,10 @@
             <h3 style="margin-bottom: 10px; color: var(--accent-green);">Statistiques du Scraper</h3>
             <p style="margin-bottom: 8px;"><strong>Dernière mise à jour :</strong> ${data.last_check || 'En cours'}</p>
             <p style="margin-bottom: 8px;"><strong>Recherches actives :</strong> ${data.active_keywords.join(', ') || 'Aucune'}</p>
-            <p style="margin-bottom: 8px;"><strong>Filtre Prix Max :</strong> ${data.max_price_filter ? data.max_price_filter + ' €' : 'Aucun (Tous les prix)'}</p>
+            <p style="margin-bottom: 8px;"><strong>Filtre Prix Max :</strong> ${data.max_price_filter ? data.max_price_filter + ' €' : 'Aucun'}</p>
             <p style="margin-bottom: 8px;"><strong>Prix Moyen :</strong> ${data.avg_price} €</p>
-            <p style="margin-bottom: 8px;"><strong>Prix le plus bas / haut :</strong> ${data.min_price} € / ${data.max_price} €</p>
-            <p style="margin-bottom: 8px;"><strong>Articles affichés dans le flux :</strong> ${data.displayed_items} (Max 40)</p>
-            <p><strong>Favoris enregistrés :</strong> ${data.total_favorites}</p>
+            <p style="margin-bottom: 8px;"><strong>Prix Min / Max :</strong> ${data.min_price} € / ${data.max_price} €</p>
+            <p><strong>Favoris :</strong> ${data.total_favorites}</p>
           </div>
         `;
       } catch (e) { console.error(e); }
@@ -598,16 +715,17 @@
             max_price: maxPrice !== "" ? parseFloat(maxPrice) : null
           })
         });
+        if (isPaused) togglePause();
         switchTab('feed');
       } catch (e) {
-        console.error("Erreur mise à jour config :", e);
+        console.error("Erreur config :", e);
       }
     }
 
     fetchItems();
     setInterval(() => {
-      if (currentTab === 'feed') fetchItems();
-    }, 1000); // Mise à jour instantanée toutes les 1 seconde
+      if (currentTab === 'feed' && !isPaused) fetchItems();
+    }, 1000);
   </script>
 </body>
 </html>

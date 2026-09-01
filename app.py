@@ -5,7 +5,7 @@ from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from curl_cffi import requests
+import cloudscraper
 
 app = Flask(__name__)
 CORS(app)
@@ -44,18 +44,25 @@ def get_vinted_session(udata):
     if udata["vinted_session"] is not None:
         return udata["vinted_session"]
     try:
-        session = requests.Session(impersonate="chrome120")
+        # Création du scraper Cloudscraper
+        scraper = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'desktop': True
+            }
+        )
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
         }
-        res = session.get("https://www.vinted.fr", headers=headers, timeout=5)
+        res = scraper.get("https://www.vinted.fr", headers=headers, timeout=10)
         if res.status_code == 200:
-            udata["vinted_session"] = session
-            return session
+            udata["vinted_session"] = scraper
+            return scraper
     except Exception as e:
-        print(f"⚠️ Erreur création session Vinted : {e}")
+        print(f"⚠️ Erreur création session Vinted avec cloudscraper : {e}")
     return udata["vinted_session"]
 
 def format_time_ago(timestamp):
@@ -92,14 +99,15 @@ def fetch_single_keyword(udata, keyword):
         session = get_vinted_session(udata)
         if session is None:
             return []
-        response = session.get(url, headers=headers, timeout=4)
+        response = session.get(url, headers=headers, timeout=8)
         if response.status_code == 200:
             return response.json().get("items", [])
         elif response.status_code in [401, 403]:
+            # Réinitialisation de la session en cas de blocage temporel
             udata["vinted_session"] = None
             session = get_vinted_session(udata)
             if session:
-                res_retry = session.get(url, headers=headers, timeout=4)
+                res_retry = session.get(url, headers=headers, timeout=8)
                 if res_retry.status_code == 200:
                     return res_retry.json().get("items", [])
     except Exception as e:

@@ -1,0 +1,4 @@
+Flask
+flask-cors
+curl_cffi
+gunicorn

@@ -1,302 +1,141 @@
 import time
 import threading
-from datetime import datetime, timezone
-from urllib.parse import quote
-from concurrent.futures import ThreadPoolExecutor
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import cloudscraper
+from curl_cffi import requests
 
 app = Flask(__name__)
 CORS(app)
 
-# Dictionnaire global pour isoler chaque utilisateur
-user_sessions = {}
-user_lock = threading.Lock()
+# Configuration de la recherche par défaut
+SEARCH_KEYWORD = "nike"
+MAX_PRICE = 30.0
+CHECK_INTERVAL = 3
 
-def get_default_user_data():
-    return {
-        "keywords": ["nike running", "nike division", "", "", ""],
-        "max_price": None,
-        "items": [],
-        "favorites": [],
-        "vinted_session": None,
-        "stats": {
-            "scraped_count": 0,
-            "last_scrape_time": None,
-            "avg_price": 0.0,
-            "min_price": 0.0,
-            "max_price": 0.0,
-            "total_found": 0
-        }
-    }
+seen_item_ids = set()
+detected_items = []
 
-def get_session_id():
-    return request.headers.get("X-Session-ID") or request.args.get("session_id") or "default"
-
-def get_user_store(session_id):
-    with user_lock:
-        if session_id not in user_sessions:
-            user_sessions[session_id] = get_default_user_data()
-        return user_sessions[session_id]
-
-def get_vinted_session(udata):
-    if udata["vinted_session"] is not None:
-        return udata["vinted_session"]
-    try:
-        # Création du scraper Cloudscraper
-        scraper = cloudscraper.create_scraper(
-            browser={
-                'browser': 'chrome',
-                'platform': 'windows',
-                'desktop': True
-            }
-        )
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
-        }
-        res = scraper.get("https://www.vinted.fr", headers=headers, timeout=10)
-        if res.status_code == 200:
-            udata["vinted_session"] = scraper
-            return scraper
-    except Exception as e:
-        print(f"⚠️ Erreur création session Vinted avec cloudscraper : {e}")
-    return udata["vinted_session"]
-
-def format_time_ago(timestamp):
-    if not timestamp:
-        return "À l'instant"
-    try:
-        now = datetime.now(timezone.utc).timestamp()
-        diff = int(now - timestamp)
-        if diff < 60:
-            return f"Il y a {max(1, diff)}s"
-        elif diff < 3600:
-            return f"Il y a {diff // 60} min"
-        elif diff < 86400:
-            return f"Il y a {diff // 3600}h"
-        else:
-            return f"Il y a {diff // 86400}j"
-    except Exception:
-        return "À l'instant"
-
-def fetch_single_keyword(udata, keyword):
-    if not keyword or not keyword.strip():
-        return []
-        
-    encoded_keyword = quote(keyword.strip())
-    url = f"https://www.vinted.fr/api/v2/catalog/items?search_text={encoded_keyword}&order=newest_first&per_page=96"
-    
+def get_vinted_session():
+    """Crée une session anonyme avec cookies Vinted."""
+    session = requests.Session(impersonate="chrome120")
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
-        "Referer": "https://www.vinted.fr/"
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
     }
-
     try:
-        session = get_vinted_session(udata)
-        if session is None:
-            return []
-        response = session.get(url, headers=headers, timeout=8)
-        if response.status_code == 200:
-            return response.json().get("items", [])
-        elif response.status_code in [401, 403]:
-            # Réinitialisation de la session en cas de blocage temporel
-            udata["vinted_session"] = None
-            session = get_vinted_session(udata)
-            if session:
-                res_retry = session.get(url, headers=headers, timeout=8)
-                if res_retry.status_code == 200:
-                    return res_retry.json().get("items", [])
+        session.get("https://www.vinted.fr", headers=headers, timeout=10)
     except Exception as e:
-        print(f"Erreur scraping sur '{keyword}' : {e}")
-    return []
+        print(f"⚠️ Erreur d'initialisation de session : {e}")
+    return session
 
-def run_user_scrape(udata):
-    active_keywords = [kw for kw in udata["keywords"] if kw and kw.strip()]
-    if not active_keywords:
-        return
+def scrape_vinted():
+    """Scraper trié par prix croissant (les moins chers en premier)."""
+    global detected_items, seen_item_ids
+    session = get_vinted_session()
 
-    all_raw_items = []
-    
-    with ThreadPoolExecutor(max_workers=min(5, len(active_keywords))) as executor:
-        results = executor.map(lambda kw: fetch_single_keyword(udata, kw), active_keywords)
-        for items_list in results:
-            all_raw_items.extend(items_list)
+    while True:
+        if SEARCH_KEYWORD:
+            try:
+                url = f"https://www.vinted.fr/api/v2/catalog/items?search_text={SEARCH_KEYWORD}&order=price_low_to_high&per_page=20"
+                
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Accept": "application/json, text/plain, */*",
+                    "Referer": "https://www.vinted.fr/"
+                }
 
-    if not all_raw_items:
-        return
+                response = session.get(url, headers=headers, timeout=5)
 
-    seen_ids = set()
-    formatted_items = []
-    all_prices = []
+                if response.status_code in [401, 403]:
+                    print("🔄 Réinitialisation de la session Vinted...")
+                    session = get_vinted_session()
+                    continue
 
-    sorted_raw = sorted(
-        all_raw_items, 
-        key=lambda x: x.get("photo", {}).get("high_resolution", {}).get("timestamp") or x.get("id", 0), 
-        reverse=True
-    )
+                if response.status_code == 200:
+                    data = response.json()
+                    items = data.get("items", [])
 
-    max_p = udata["max_price"]
-    for item in sorted_raw:
-        item_id = str(item.get("id"))
-        if item_id in seen_ids:
-            continue
-        seen_ids.add(item_id)
+                    temp_items = []
+                    for item in items:
+                        item_id = str(item.get("id"))
+                        
+                        # Extraction sécurisée du prix (gestion dict, float, int ou str)
+                        price_raw = item.get("price", 0)
+                        if isinstance(price_raw, dict):
+                            price = float(price_raw.get("amount", 0))
+                        else:
+                            price = float(price_raw or 0)
 
-        price_raw = item.get("price", 0)
-        price = float(price_raw.get("amount", 0)) if isinstance(price_raw, dict) else float(price_raw or 0)
+                        if price <= MAX_PRICE:
+                            # Extraction sécurisée de l'image
+                            photo_data = item.get("photo")
+                            image_url = photo_data.get("url") if isinstance(photo_data, dict) else ""
 
-        if max_p is not None and price > max_p:
-            continue
+                            # Extraction sécurisée du vendeur
+                            user_data = item.get("user")
+                            seller_name = user_data.get("login", "Vendeur") if isinstance(user_data, dict) else "Vendeur"
 
-        all_prices.append(price)
+                            formatted_item = {
+                                "id": item_id,
+                                "title": item.get("title", "Sans titre"),
+                                "brand": item.get("brand_title", "Marque inconnue"),
+                                "size": item.get("size_title", "Taille N/A"),
+                                "price": f"{price:.2f}",
+                                "seller": seller_name,
+                                "condition": item.get("status", "Bon état"),
+                                "time_ago": "Les moins chers",
+                                "image": image_url,
+                                "url": f"https://www.vinted.fr/items/{item_id}?referrer=catalog"
+                            }
+                            temp_items.append(formatted_item)
 
-        photo_data = item.get("photo")
-        image_url = photo_data.get("url") if isinstance(photo_data, dict) else ""
-        created_ts = photo_data.get("high_resolution", {}).get("timestamp") if isinstance(photo_data, dict) else None
+                    detected_items = temp_items
+                    print(f"⚡ [Mise à jour] {len(detected_items)} articles trouvés pour '{SEARCH_KEYWORD}' (< {MAX_PRICE}€)")
 
-        user_data = item.get("user", {}) if isinstance(item.get("user"), dict) else {}
-        seller_name = user_data.get("login", "Vendeur")
-        
-        # Récupération de la note (rating) si disponible
-        seller_rating = user_data.get("feedback_reputation", None) or item.get("rating", None)
+            except Exception as e:
+                print(f"Erreur de lecture : {e}")
 
-        formatted_items.append({
-            "id": item_id,
-            "title": item.get("title") or "Sans titre",
-            "brand": item.get("brand_title", "N/A"),
-            "size": item.get("size_title", "N/A"),
-            "price": f"{price:.2f}",
-            "price_num": price,
-            "seller": seller_name,
-            "seller_rating": seller_rating,
-            "condition": item.get("status", "Article"),
-            "time_ago": format_time_ago(created_ts),
-            "image": image_url,
-            "url": f"https://www.vinted.fr/items/{item_id}?referrer=catalog"
-        })
+        time.sleep(CHECK_INTERVAL)
 
-    with user_lock:
-        udata["items"] = formatted_items
-        
-        if all_prices:
-            udata["stats"]["avg_price"] = round(sum(all_prices) / len(all_prices), 2)
-            udata["stats"]["min_price"] = round(min(all_prices), 2)
-            udata["stats"]["max_price"] = round(max(all_prices), 2)
-            udata["stats"]["total_found"] = len(all_prices)
+# Lancement du scraper en tâche de fond
+scraper_thread = threading.Thread(target=scrape_vinted, daemon=True)
+scraper_thread.start()
 
-        udata["stats"]["scraped_count"] += len(formatted_items)
-        udata["stats"]["last_scrape_time"] = time.strftime("%H:%M:%S")
-
-# --- ROUTES API ---
+# --- ROUTES API FRONTEND ---
 
 @app.route('/api/feed', methods=['GET'])
 def get_feed():
-    sid = get_session_id()
-    udata = get_user_store(sid)
-    
-    run_user_scrape(udata)
-    
-    items = udata["items"]
-    limited_items = items[:40]
     return jsonify({
         "status": "online",
-        "keywords": [kw for kw in udata["keywords"] if kw],
-        "total_count": len(items),
-        "displayed_count": len(limited_items),
-        "items": limited_items,
-        "stats": {
-            "avg_price": udata["stats"]["avg_price"],
-            "min_price": udata["stats"]["min_price"],
-            "max_price": udata["stats"]["max_price"]
-        }
+        "keyword": SEARCH_KEYWORD,
+        "max_price": MAX_PRICE,
+        "count": len(detected_items),
+        "items": detected_items
     })
 
-@app.route('/api/config', methods=['GET', 'POST'])
-def handle_config():
-    sid = get_session_id()
-    udata = get_user_store(sid)
+@app.route('/api/config', methods=['POST'])
+def update_config():
+    global SEARCH_KEYWORD, MAX_PRICE, detected_items
+    data = request.json or {}
     
-    if request.method == 'POST':
-        data = request.json or {}
+    if "keyword" in data:
+        raw_keyword = str(data["keyword"]).strip()
+        # Nettoyage des crochets ou guillemets indésirables venant du frontend
+        raw_keyword = raw_keyword.replace("[", "").replace("]", "").replace("'", "").replace('"', '')
+        if raw_keyword:
+            SEARCH_KEYWORD = raw_keyword.lower()
+            
+    if "max_price" in data and data["max_price"]:
+        try:
+            MAX_PRICE = float(data["max_price"])
+        except ValueError:
+            pass
         
-        if "single_keyword" in data:
-            kw = str(data["single_keyword"]).strip()
-            udata["keywords"] = [kw, "", "", "", ""]
-            udata["items"] = []
-
-        if "keywords" in data and isinstance(data["keywords"], list):
-            new_kw = [str(k).strip() for k in data["keywords"][:5]]
-            while len(new_kw) < 5:
-                new_kw.append("")
-            udata["keywords"] = new_kw
-            udata["items"] = []
-
-        if "max_price" in data:
-            try:
-                val = float(data["max_price"])
-                udata["max_price"] = val if val > 0 else None
-            except (ValueError, TypeError):
-                udata["max_price"] = None
-
-        run_user_scrape(udata)
-
-        return jsonify({"status": "updated", "keywords": udata["keywords"], "max_price": udata["max_price"]})
-    
-    return jsonify({"keywords": udata["keywords"], "max_price": udata["max_price"]})
-
-@app.route('/api/favorites', methods=['GET', 'POST', 'DELETE'])
-def handle_favorites():
-    sid = get_session_id()
-    udata = get_user_store(sid)
-    
-    if request.method == 'POST':
-        item = request.json
-        if item and not any(f['id'] == item['id'] for f in udata["favorites"]):
-            udata["favorites"].append(item)
-        return jsonify({"status": "added", "favorites": udata["favorites"]})
-    
-    elif request.method == 'DELETE':
-        item_id = request.args.get('id')
-        udata["favorites"] = [f for f in udata["favorites"] if f['id'] != item_id]
-        return jsonify({"status": "removed", "favorites": udata["favorites"]})
-        
-    return jsonify({"favorites": udata["favorites"]})
-
-@app.route('/api/recommendations', methods=['GET'])
-def get_recommendations():
-    sid = get_session_id()
-    udata = get_user_store(sid)
-    
-    if not udata["favorites"]:
-        return jsonify({"items": []})
-        
-    fav_brands = {f['brand'].lower() for f in udata["favorites"] if f.get('brand') and f['brand'] != "N/A"}
-    recommended = [
-        item for item in udata["items"] 
-        if item.get('brand', '').lower() in fav_brands
-    ][:40]
-    return jsonify({"items": recommended})
-
-@app.route('/api/stats', methods=['GET'])
-def get_stats():
-    sid = get_session_id()
-    udata = get_user_store(sid)
-    st = udata["stats"]
-    return jsonify({
-        "active_keywords": [k for k in udata["keywords"] if k],
-        "max_price_filter": udata["max_price"],
-        "current_feed_items": len(udata["items"]),
-        "displayed_items": min(40, len(udata["items"])),
-        "avg_price": st["avg_price"],
-        "min_price": st["min_price"],
-        "max_price": st["max_price"],
-        "total_favorites": len(udata["favorites"]),
-        "last_check": st["last_scrape_time"]
-    })
+    detected_items = [] # Vide la liste pour recharger avec les nouveaux filtres
+    print(f"⚙️ Configuration appliquée : Mot-clé='{SEARCH_KEYWORD}' | Prix Max={MAX_PRICE}€")
+    return jsonify({"status": "updated"})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    print("🚀 Serveur de détection par prix croissant démarré !")
+    app.run(host='0.0.0.0', port=5000, debug=True)

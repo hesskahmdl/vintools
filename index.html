@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SK Tools - BETA v1.01</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V-Tools Live Monitor</title>
   <style>
     :root {
       --bg-dark: #080a0d;
@@ -13,8 +13,6 @@
       --text-main: #ffffff;
       --text-muted: #64748b;
       --border-color: #1a202c;
-      --pause-red: #ff4757;
-      --star-color: #ffb703;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -23,43 +21,23 @@
       background-color: var(--bg-dark);
       color: var(--text-main);
       display: flex;
-      flex-direction: row;
       height: 100vh;
       overflow: hidden;
     }
 
-    /* Sidebar Desktop */
+    /* Sidebar */
     .sidebar {
-      width: 250px;
+      width: 240px;
       background-color: #05070a;
       border-right: 1px solid var(--border-color);
       padding: 20px 15px;
       display: flex;
       flex-direction: column;
       gap: 20px;
-      flex-shrink: 0;
     }
 
-    .brand-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .brand { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
+    .brand { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
     .brand span { color: var(--accent-green); }
-
-    .beta-badge {
-      border: 1px solid var(--accent-green);
-      color: var(--accent-green);
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      background-color: rgba(0, 255, 163, 0.05);
-    }
 
     .menu-group { display: flex; flex-direction: column; gap: 4px; }
     .menu-title { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #475569; margin: 10px 0 5px 10px; }
@@ -68,15 +46,11 @@
       padding: 10px 12px;
       border-radius: 6px;
       color: #94a3b8;
+      text-decoration: none;
       font-size: 0.85rem;
       display: flex;
       align-items: center;
       gap: 10px;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      width: 100%;
-      text-align: left;
     }
 
     .menu-item.active, .menu-item:hover {
@@ -84,109 +58,14 @@
       color: var(--accent-green);
     }
 
-    /* Mobile Navigation */
-    .mobile-nav {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background-color: #05070a;
-      border-top: 1px solid var(--border-color);
-      z-index: 1000;
-      justify-content: space-around;
-      align-items: center;
-    }
-
-    .mobile-nav-btn {
-      background: none;
-      border: none;
-      color: #64748b;
-      font-size: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    .mobile-nav-btn.active { color: var(--accent-green); }
-
     /* Main Container */
-    .main-content { 
-      flex: 1; 
-      padding: 20px; 
-      overflow-y: auto; 
-      padding-bottom: 80px;
-    }
+    .main-content { flex: 1; padding: 25px; overflow-y: auto; }
 
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    /* Barre de recherche unique */
-    .single-search-box {
-      display: flex;
-      align-items: center;
-      background-color: #0f131a;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 4px 8px;
-    }
-
-    .single-search-box input {
-      background: transparent;
-      border: none;
-      color: #fff;
-      padding: 6px;
-      font-size: 0.85rem;
-      outline: none;
-      width: 140px;
-    }
-
-    .single-search-box button {
-      background: var(--accent-green);
-      border: none;
-      color: #000;
-      padding: 6px 10px;
-      border-radius: 4px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 0.75rem;
-    }
-
-    /* Bouton Pause Flux */
-    .btn-pause {
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--accent-green);
-      background-color: rgba(0, 255, 163, 0.1);
-      color: var(--accent-green);
-      font-weight: 700;
-      font-size: 0.8rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-
-    .btn-pause.paused {
-      border-color: var(--pause-red);
-      background-color: rgba(255, 71, 87, 0.15);
-      color: var(--pause-red);
+      margin-bottom: 20px;
     }
 
     .status-pill {
@@ -208,132 +87,17 @@
       box-shadow: 0 0 10px var(--accent-green);
     }
 
-    .status-dot.paused {
-      background-color: var(--pause-red);
-      box-shadow: 0 0 10px var(--pause-red);
-    }
-
-    /* Stats Bar */
-    .stats-bar {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .stat-box {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      padding: 12px;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .stat-box .title { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
-    .stat-box .val { font-size: 1.1rem; font-weight: 800; color: var(--accent-green); }
-
-    /* Badge Lauriers & Étoiles Style Fyndit */
-    .badge-rating-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin: 15px 0 25px 0;
-    }
-
-    .badge-rating-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .laurel-icon {
-      width: 28px;
-      height: 40px;
-      fill: #d97706;
-    }
-
-    .badge-rating-details {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .badge-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: 0.5px;
-    }
-
-    .badge-stars {
-      display: flex;
-      gap: 2px;
-      margin: 3px 0;
-    }
-
-    .badge-star-icon {
-      width: 14px;
-      height: 14px;
-      fill: #ffb703;
-    }
-
-    .badge-subtitle {
-      font-size: 0.65rem;
-      color: #94a3b8;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-
-    /* Target Box Coming Soon (Tarifs) */
-    .coming-soon-container {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 40px 20px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 25px;
-    }
-
-    .coming-soon-badge {
-      background-color: rgba(0, 255, 163, 0.1);
-      border: 1px solid var(--accent-green);
-      color: var(--accent-green);
-      font-size: 0.9rem;
-      font-weight: 800;
-      padding: 6px 16px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      box-shadow: 0 0 15px rgba(0, 255, 163, 0.2);
-    }
-
-    .coming-soon-text {
-      color: var(--text-muted);
-      font-size: 0.85rem;
-    }
-
-    /* Multi-Search Container */
-    .multi-search-container {
+    /* Panel de Filtres / Recherche */
+    .filter-box {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 16px;
+      padding: 15px;
       margin-bottom: 25px;
       display: flex;
-      flex-direction: column;
       gap: 12px;
+      align-items: center;
     }
-
-    .slot-row { display: flex; align-items: center; gap: 10px; }
-    .slot-label { font-size: 0.8rem; font-weight: 700; color: var(--accent-green); width: 80px; }
 
     .filter-input {
       background-color: #05070a;
@@ -343,13 +107,12 @@
       border-radius: 6px;
       font-size: 0.9rem;
       outline: none;
-      width: 100%;
     }
 
     .filter-input:focus { border-color: var(--accent-green); }
 
     .btn-apply {
-      padding: 12px;
+      padding: 10px 20px;
       background-color: var(--accent-green);
       border: none;
       border-radius: 6px;
@@ -357,122 +120,72 @@
       font-weight: 700;
       cursor: pointer;
       transition: background 0.2s;
-      margin-top: 5px;
     }
 
     .btn-apply:hover { background-color: var(--accent-green-hover); }
 
-    /* Grid Responsive */
+    /* Grid des cartes */
     .feed-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
     }
 
-    @media (min-width: 768px) {
-      .feed-grid {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 16px;
-      }
-    }
-
-    /* Carte Article */
+    /* Structure Carte */
     .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 10px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      position: relative;
+      gap: 10px;
     }
-
-    .fav-btn {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      background: rgba(0,0,0,0.6);
-      border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      color: #fff;
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2;
-    }
-    .fav-btn.active { color: #ff4757; }
 
     .card-img-container {
       position: relative;
       width: 100%;
-      height: 160px;
+      height: 190px;
       border-radius: 6px;
       overflow: hidden;
       background-color: #1e293b;
     }
 
     .card-img { width: 100%; height: 100%; object-fit: cover; }
-    .card-details { display: flex; flex-direction: column; gap: 4px; }
-    .brand-size { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-    .card-title { font-size: 0.8rem; font-weight: 600; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
-    .seller-info { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 0.75rem; color: #94a3b8; flex-wrap: wrap; }
-    .seller-avatar { width: 12px; height: 12px; border-radius: 50%; background-color: var(--accent-green); flex-shrink: 0; }
-    
-    .location-info { font-size: 0.7rem; color: #64748b; display: flex; align-items: center; gap: 4px; }
 
-    /* Style des Étoiles Vectorielles SVG */
-    .seller-stars-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 1px;
-      margin-left: 2px;
-    }
+    .card-details { display: flex; flex-direction: column; gap: 4px; }
     
-    .star-icon {
-      width: 11px;
-      height: 11px;
-      fill: #334155;
-    }
+    .brand-size { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+    .card-title { font-size: 0.85rem; font-weight: 600; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
-    .star-icon.filled {
-      fill: var(--star-color);
-    }
-    
-    .rating-text {
-      font-size: 0.68rem;
-      color: #64748b;
-      margin-left: 2px;
-    }
+    .seller-info { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 0.75rem; color: #94a3b8; }
+    .seller-avatar { width: 14px; height: 14px; border-radius: 50%; background-color: var(--accent-green); }
 
     .condition-badge {
       display: inline-block;
       background-color: #1e293b;
       color: #94a3b8;
-      font-size: 0.65rem;
+      font-size: 0.7rem;
       padding: 2px 6px;
       border-radius: 4px;
       width: fit-content;
     }
 
-    .price-container { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
-    .price-main { font-size: 1rem; font-weight: 700; color: #fff; }
-    .time-tag { font-size: 0.7rem; color: var(--accent-green); font-weight: 600; }
+    .price-container { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
+    .price-main { font-size: 1.1rem; font-weight: 700; color: #fff; }
 
+    .time-tag { font-size: 0.7rem; color: #64748b; }
+
+    /* Bouton d'action */
     .btn-buy {
       width: 100%;
-      padding: 8px;
+      padding: 9px;
       background-color: var(--accent-green);
       border: none;
       border-radius: 6px;
       color: #000;
       font-weight: 700;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       cursor: pointer;
       text-decoration: none;
       text-align: center;
@@ -481,461 +194,124 @@
     }
 
     .btn-buy:hover { background-color: var(--accent-green-hover); }
-
-    @media (max-width: 768px) {
-      body { flex-direction: column; }
-      .sidebar { display: none; }
-      .mobile-nav { display: flex; }
-      .main-content { padding: 15px; }
-      .header h2 { font-size: 1.1rem; }
-      .single-search-box input { width: 90px; }
-    }
   </style>
 </head>
 <body>
 
   <div class="sidebar">
-    <div class="brand-container">
-      <div class="brand"><span>SK</span> tools</div>
-      <div class="beta-badge">BETA v1.01</div>
-    </div>
+    <div class="brand"><span>v</span>tools</div>
     
     <div class="menu-group">
-      <div class="menu-title">Vinted Monitor</div>
-      <button onclick="switchTab('feed')" id="tab-feed" class="menu-item active">Fil (Max 40)</button>
-      <button onclick="switchTab('search')" id="tab-search" class="menu-item">Multi-Recherche & Prix</button>
-      <button onclick="switchTab('rates')" id="tab-rates" class="menu-item">Tarifs</button>
-      <button onclick="switchTab('favs')" id="tab-favs" class="menu-item">Favoris</button>
-      <button onclick="switchTab('stats')" id="tab-stats" class="menu-item">Statistiques</button>
+      <div class="menu-title">Vinted</div>
+      <a href="#" class="menu-item active">Fil d'actualité</a>
+      <a href="#" class="menu-item">Filtres</a>
+      <a href="#" class="menu-item">Statistiques</a>
     </div>
   </div>
 
   <div class="main-content">
     <div class="header">
-      <h2 id="page-title">Fil d'actualité en direct</h2>
-
-      <div class="header-controls">
-        <div class="single-search-box">
-          <input type="text" id="quick-search-input" placeholder="Recherche rapide...">
-          <button onclick="applyQuickSearch()">OK</button>
-        </div>
-
-        <button id="btn-toggle-pause" class="btn-pause" onclick="togglePause()">
-          <span>⏸️</span> <span id="pause-txt">Pause</span>
-        </button>
-
-        <div class="status-pill">
-          <div class="status-dot" id="status-dot"></div>
-          <span id="status-text">Scraper : Actif</span> (<span id="items-count">0</span>/40)
-        </div>
+      <h2>Fil d'actualité</h2>
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        Scraper : Actif (<span id="items-count">0</span> trouvés)
       </div>
     </div>
 
-    <div class="badge-rating-container">
-      <div class="badge-rating-content">
-        <svg class="laurel-icon" viewBox="0 0 24 32">
-          <path d="M12,2 C10,6 6,10 2,12 C6,14 10,18 12,22 C10,18 7,16 4,16 C7,14 9,11 10,8 C11,5 12,2 12,2 Z M10,12 C8,15 5,18 2,20 C5,21 8,23 10,26 C9,23 7,21 5,20 C7,19 9,17 10,12 Z"/>
-        </svg>
-
-        <div class="badge-rating-details">
-          <div class="badge-title">#1 Vinted Bot</div>
-          <div class="badge-stars">
-            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            <svg class="badge-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-          </div>
-          <div class="badge-subtitle">WORKS IN EUROPE + USA</div>
-        </div>
-
-        <svg class="laurel-icon" viewBox="0 0 24 32" style="transform: scaleX(-1);">
-          <path d="M12,2 C10,6 6,10 2,12 C6,14 10,18 12,22 C10,18 7,16 4,16 C7,14 9,11 10,8 C11,5 12,2 12,2 Z M10,12 C8,15 5,18 2,20 C5,21 8,23 10,26 C9,23 7,21 5,20 C7,19 9,17 10,12 Z"/>
-        </svg>
-      </div>
-    </div>
-
-    <div class="coming-soon-container" id="rates-panel" style="display: none;">
-      <div class="coming-soon-badge">Coming Soon</div>
-      <div class="coming-soon-text">Les offres et plans d'abonnement seront bientôt disponibles.</div>
-    </div>
-
-    <div class="stats-bar" id="stats-bar">
-      <div class="stat-box">
-        <span class="title">Prix Moyen</span>
-        <span class="val" id="stat-avg">0.00 €</span>
-      </div>
-      <div class="stat-box">
-        <span class="title">Prix Min</span>
-        <span class="val" id="stat-min" style="color: #64748b;">0.00 €</span>
-      </div>
-      <div class="stat-box">
-        <span class="title">Prix Max</span>
-        <span class="val" id="stat-max" style="color: #64748b;">0.00 €</span>
-      </div>
-    </div>
-
-    <div class="multi-search-container" id="multi-search-panel" style="display: none;">
-      <h3 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px;">Recherches Multiples & Filtres :</h3>
-      
-      <div class="slot-row"><span class="slot-label">Slot 1:</span><input type="text" id="slot-0" class="filter-input" placeholder="Ex: nike running"></div>
-      <div class="slot-row"><span class="slot-label">Slot 2:</span><input type="text" id="slot-1" class="filter-input" placeholder="Ex: nike division"></div>
-      <div class="slot-row"><span class="slot-label">Slot 3:</span><input type="text" id="slot-2" class="filter-input" placeholder="Ex: adidas campus"></div>
-      <div class="slot-row"><span class="slot-label">Slot 4:</span><input type="text" id="slot-3" class="filter-input" placeholder="Ex: dunk low"></div>
-      <div class="slot-row"><span class="slot-label">Slot 5:</span><input type="text" id="slot-4" class="filter-input" placeholder="Ex: carhartt jacket"></div>
-      
-      <div class="slot-row" style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px;">
-        <span class="slot-label" style="color: #ff4757;">Prix Max (€):</span>
-        <input type="number" id="max-price-input" class="filter-input" placeholder="Ex: 40">
-      </div>
-
-      <button onclick="saveMultiConfig()" class="btn-apply">Appliquer les modifications</button>
+    <!-- Filtres Dynamiques -->
+    <div class="filter-box">
+      <input type="text" id="search-keyword" class="filter-input" placeholder="Mot-clé (ex: Nike, Adidas)" value="nike" style="flex: 2;">
+      <input type="number" id="max-price" class="filter-input" placeholder="Prix Max (€)" value="30" style="flex: 1;">
+      <button onclick="updateConfig()" class="btn-apply">Appliquer les filtres</button>
     </div>
 
     <div class="feed-grid" id="feed">
-      <div style="color: #64748b; grid-column: 1/-1;">Chargement des annonces...</div>
+      <div style="color: #64748b; grid-column: 1/-1;">Chargement des articles...</div>
     </div>
   </div>
 
-  <div class="mobile-nav">
-    <button onclick="switchTab('feed')" id="mob-tab-feed" class="mobile-nav-btn active">⚡ Flux</button>
-    <button onclick="switchTab('search')" id="mob-tab-search" class="mobile-nav-btn">🔍 Rech.</button>
-    <button onclick="switchTab('rates')" id="mob-tab-rates" class="mobile-nav-btn">🏷️ Tarifs</button>
-    <button onclick="switchTab('favs')" id="mob-tab-favs" class="mobile-nav-btn">♥ Favs</button>
-    <button onclick="switchTab('stats')" id="mob-tab-stats" class="mobile-nav-btn">📊 Stats</button>
-  </div>
-
   <script>
-    const API_URL = 'https://vintools.onrender.com';
-    let currentTab = 'feed';
-    let localFavs = [];
-    let isPaused = false;
-
-    // Gestion de la Session ID Individuelle
-    let sessionId = localStorage.getItem('sk_session_id');
-    if (!sessionId) {
-      sessionId = 'user_' + Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('sk_session_id', sessionId);
-    }
-
-    // Helper pour fetch avec Session ID inclus automatiquement dans le header
-    async function apiFetch(endpoint, options = {}) {
-      options.headers = options.headers || {};
-      options.headers['X-Session-ID'] = sessionId;
-      options.headers['ngrok-skip-browser-warning'] = 'true';
-      return fetch(`${API_URL}${endpoint}`, options);
-    }
-
-    document.getElementById('quick-search-input').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        applyQuickSearch();
-      }
-    });
-
-    function togglePause() {
-      isPaused = !isPaused;
-      const btn = document.getElementById('btn-toggle-pause');
-      const txt = document.getElementById('pause-txt');
-      const dot = document.getElementById('status-dot');
-      const statusTxt = document.getElementById('status-text');
-
-      if (isPaused) {
-        btn.classList.add('paused');
-        dot.classList.add('paused');
-        txt.innerText = 'Reprendre';
-        statusTxt.innerText = 'Scraper : En Pause';
-      } else {
-        btn.classList.remove('paused');
-        dot.classList.remove('paused');
-        txt.innerText = 'Pause';
-        statusTxt.innerText = 'Scraper : Actif';
-        fetchItems();
-      }
-    }
-
-    async function applyQuickSearch() {
-      const val = document.getElementById('quick-search-input').value.trim();
-      if (!val) return;
-      
-      document.getElementById('feed').innerHTML = '<div style="color: var(--accent-green); grid-column: 1/-1;">Recherche en cours pour "' + val + '"...</div>';
-
-      try {
-        await apiFetch('/api/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ single_keyword: val })
-        });
-        if (isPaused) togglePause();
-        switchTab('feed');
-        setTimeout(fetchItems, 300);
-      } catch (e) {
-        console.error("Erreur recherche rapide :", e);
-      }
-    }
-
-    async function loadCurrentConfig() {
-      try {
-        const res = await apiFetch('/api/config');
-        const data = await res.json();
-        if (data.keywords && Array.isArray(data.keywords)) {
-          data.keywords.forEach((kw, index) => {
-            const el = document.getElementById(`slot-${index}`);
-            if (el) el.value = kw;
-          });
-        }
-        if (data.max_price !== undefined && data.max_price !== null) {
-          document.getElementById('max-price-input').value = data.max_price;
-        }
-      } catch (e) { console.error(e); }
-    }
-
-    function switchTab(tab) {
-      currentTab = tab;
-      
-      document.querySelectorAll('.menu-item, .mobile-nav-btn').forEach(el => el.classList.remove('active'));
-      
-      const deskTab = document.getElementById(`tab-${tab}`);
-      if (deskTab) deskTab.classList.add('active');
-      const mobTab = document.getElementById(`mob-tab-${tab}`);
-      if (mobTab) mobTab.classList.add('active');
-
-      const searchPanel = document.getElementById('multi-search-panel');
-      const ratesPanel = document.getElementById('rates-panel');
-      const statsBar = document.getElementById('stats-bar');
-      const feedContainer = document.getElementById('feed');
-      const pageTitle = document.getElementById('page-title');
-
-      if (tab === 'feed') {
-        pageTitle.innerText = "Fil d'actualité en direct (Max 40)";
-        searchPanel.style.display = 'none';
-        ratesPanel.style.display = 'none';
-        statsBar.style.display = 'grid';
-        feedContainer.style.display = 'grid';
-        fetchItems();
-      } else if (tab === 'search') {
-        pageTitle.innerText = "Multi-Recherche & Filtre Prix";
-        searchPanel.style.display = 'flex';
-        ratesPanel.style.display = 'none';
-        statsBar.style.display = 'grid';
-        feedContainer.style.display = 'none';
-        loadCurrentConfig();
-      } else if (tab === 'rates') {
-        pageTitle.innerText = "Grille des Tarifs";
-        searchPanel.style.display = 'none';
-        ratesPanel.style.display = 'flex';
-        statsBar.style.display = 'none';
-        feedContainer.style.display = 'none';
-      } else if (tab === 'favs') {
-        pageTitle.innerText = "Mes Favoris";
-        searchPanel.style.display = 'none';
-        ratesPanel.style.display = 'none';
-        statsBar.style.display = 'grid';
-        feedContainer.style.display = 'grid';
-        fetchFavoritesAndRecs();
-      } else if (tab === 'stats') {
-        pageTitle.innerText = "Statistiques Globale";
-        searchPanel.style.display = 'none';
-        ratesPanel.style.display = 'none';
-        statsBar.style.display = 'grid';
-        feedContainer.style.display = 'grid';
-        fetchStats();
-      }
-    }
+    const API_URL = 'https://synonymously-additional-jaxon.ngrok-free.dev';
 
     async function fetchItems() {
-      if (currentTab !== 'feed' || isPaused) return;
       try {
-        const response = await apiFetch('/api/feed');
-        if (!response.ok) return;
+        const response = await fetch(`${API_URL}/api/feed`, {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
+        
+        if (!response.ok) throw new Error("Erreur réseau");
         
         const data = await response.json();
-        document.getElementById('items-count').innerText = data.displayed_count;
         
-        if (data.stats) {
-          document.getElementById('stat-avg').innerText = `${data.stats.avg_price} €`;
-          document.getElementById('stat-min').innerText = `${data.stats.min_price} €`;
-          document.getElementById('stat-max').innerText = `${data.stats.max_price} €`;
-        }
-
-        renderItems(data.items);
-      } catch (error) {
-        console.error("Erreur flux :", error);
-      }
-    }
-
-    async function fetchFavoritesAndRecs() {
-      try {
-        const [favRes, recRes] = await Promise.all([
-          apiFetch('/api/favorites'),
-          apiFetch('/api/recommendations')
-        ]);
-
-        const favData = await favRes.json();
-        const recData = await recRes.json();
-        
-        localFavs = favData.favorites.map(f => f.id);
-        const combined = [...favData.favorites, ...recData.items].slice(0, 40);
-        
-        document.getElementById('items-count').innerText = combined.length;
-        renderItems(combined);
-      } catch (e) {
-        console.error("Erreur favoris :", e);
-      }
-    }
-
-    async function fetchStats() {
-      try {
-        const response = await apiFetch('/api/stats');
-        const data = await response.json();
-        
+        document.getElementById('items-count').innerText = data.count;
         const feedContainer = document.getElementById('feed');
-        feedContainer.innerHTML = `
-          <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; grid-column: 1/-1;">
-            <h3 style="margin-bottom: 10px; color: var(--accent-green);">Statistiques du Scraper</h3>
-            <p style="margin-bottom: 8px;"><strong>Dernière mise à jour :</strong> ${data.last_check || 'En cours'}</p>
-            <p style="margin-bottom: 8px;"><strong>Recherches actives :</strong> ${data.active_keywords.join(', ') || 'Aucune'}</p>
-            <p style="margin-bottom: 8px;"><strong>Filtre Prix Max :</strong> ${data.max_price_filter ? data.max_price_filter + ' €' : 'Aucun'}</p>
-            <p style="margin-bottom: 8px;"><strong>Prix Moyen :</strong> ${data.avg_price} €</p>
-            <p style="margin-bottom: 8px;"><strong>Prix Min / Max :</strong> ${data.min_price} € / ${data.max_price} €</p>
-            <p><strong>Favoris :</strong> ${data.total_favorites}</p>
-          </div>
-        `;
-      } catch (e) { console.error(e); }
-    }
-
-    function generateStarsSVG(rating) {
-      if (rating === undefined || rating === null || rating === '') return '';
-      const numRating = parseFloat(rating);
-      if (isNaN(numRating)) return '';
-
-      const starSVGPath = "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z";
-      let starsHTML = '<div class="seller-stars-container">';
-      
-      for (let i = 1; i <= 5; i++) {
-        const isFilled = i <= Math.round(numRating);
-        starsHTML += `
-          <svg class="star-icon ${isFilled ? 'filled' : ''}" viewBox="0 0 24 24">
-            <path d="${starSVGPath}"/>
-          </svg>
-        `;
-      }
-      
-      starsHTML += `<span class="rating-text">(${numRating.toFixed(1)})</span></div>`;
-      return starsHTML;
-    }
-
-    function renderItems(items) {
-      const feedContainer = document.getElementById('feed');
-      if (!items || items.length === 0) {
-        feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Aucun article trouvé...</div>';
-        return;
-      }
-
-      let htmlContent = '';
-      items.forEach(item => {
-        const isFav = localFavs.includes(item.id);
-        const sellerRating = item.seller_rating || item.rating || item.seller_score || null;
-        const starsHTML = generateStarsSVG(sellerRating);
         
-        const city = item.city || item.location || '';
-        const country = item.country || '';
-        let locationText = '';
-        if (city && country) {
-          locationText = `${city}, ${country}`;
-        } else {
-          locationText = city || country || '';
+        if (!data.items || data.items.length === 0) {
+          feedContainer.innerHTML = '<div style="color: #64748b; grid-column: 1/-1;">Recherche en cours d\'articles correspondant à tes critères...</div>';
+          return;
         }
 
-        htmlContent += `
-          <div class="card">
-            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${JSON.stringify(item).replace(/"/g, '&quot;')})">♥</button>
-            <div class="card-img-container">
-              <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
-            </div>
-            <div class="card-details">
-              <div class="brand-size">${item.brand} • ${item.size}</div>
-              <div class="card-title">${item.title}</div>
-              
-              <div class="seller-info">
-                <div class="seller-avatar"></div>
-                <span>${item.seller}</span>
-                ${starsHTML}
+        let htmlContent = '';
+        data.items.forEach(item => {
+          htmlContent += `
+            <div class="card">
+              <div class="card-img-container">
+                <img src="${item.image}" class="card-img" alt="${item.title}" onerror="this.src='https://via.placeholder.com/200x200/1e293b/8a99ad?text=Image+Indisponible'">
               </div>
+              <div class="card-details">
+                <div class="brand-size">${item.brand} • ${item.size}</div>
+                <div class="card-title">${item.title}</div>
+                
+                <div class="seller-info">
+                  <div class="seller-avatar"></div>
+                  <span>${item.seller}</span>
+                </div>
 
-              ${locationText ? `<div class="location-info">📍 ${locationText}</div>` : ''}
+                <div class="condition-badge">${item.condition}</div>
 
-              <div class="condition-badge">${item.condition}</div>
+                <div class="price-container">
+                  <span class="price-main">${item.price} €</span>
+                </div>
 
-              <div class="price-container">
-                <span class="price-main">${item.price} €</span>
+                <div class="time-tag">${item.time_ago}</div>
               </div>
-
-              <div class="time-tag">${item.time_ago}</div>
+              <a href="${item.url}" target="_blank" class="btn-buy">Acheter</a>
             </div>
-            <a href="${item.url}" target="_blank" class="btn-buy">Acheter</a>
-          </div>
-        `;
-      });
-
-      feedContainer.innerHTML = htmlContent;
-    }
-
-    async function toggleFav(item) {
-      const isFav = localFavs.includes(item.id);
-      const method = isFav ? 'DELETE' : 'POST';
-      const endpoint = isFav ? `/api/favorites?id=${item.id}` : `/api/favorites`;
-      
-      try {
-        await apiFetch(endpoint, {
-          method: method,
-          headers: { 'Content-Type': 'application/json' },
-          body: isFav ? null : JSON.stringify(item)
+          `;
         });
 
-        if (isFav) {
-          localFavs = localFavs.filter(id => id !== item.id);
-        } else {
-          localFavs.push(item.id);
-        }
+        feedContainer.innerHTML = htmlContent;
 
-        if (currentTab === 'favs') {
-          fetchFavoritesAndRecs();
-        } else {
-          fetchItems();
-        }
-      } catch (e) { console.error(e); }
-    }
-
-    async function saveMultiConfig() {
-      const keywords = [
-        document.getElementById('slot-0').value,
-        document.getElementById('slot-1').value,
-        document.getElementById('slot-2').value,
-        document.getElementById('slot-3').value,
-        document.getElementById('slot-4').value,
-      ];
-      const maxPrice = document.getElementById('max-price-input').value;
-
-      try {
-        await apiFetch('/api/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            keywords: keywords,
-            max_price: maxPrice !== "" ? parseFloat(maxPrice) : null
-          })
-        });
-        if (isPaused) togglePause();
-        switchTab('feed');
-      } catch (e) {
-        console.error("Erreur config :", e);
+      } catch (error) {
+        console.error("Erreur de connexion :", error);
       }
     }
 
+    async function updateConfig() {
+      const keyword = document.getElementById('search-keyword').value;
+      const maxPrice = document.getElementById('max-price').value;
+
+      try {
+        await fetch(`${API_URL}/api/config`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
+          body: JSON.stringify({ keyword: keyword, max_price: maxPrice })
+        });
+      } catch (e) {
+        console.error("Erreur mise à jour config :", e);
+      }
+
+      fetchItems();
+    }
+
+    // Exécution initiale et intervalle de 2s
     fetchItems();
-    setInterval(() => {
-      if (currentTab === 'feed' && !isPaused) fetchItems();
-    }, 1000);
+    setInterval(fetchItems, 2000);
   </script>
 </body>
 </html>
